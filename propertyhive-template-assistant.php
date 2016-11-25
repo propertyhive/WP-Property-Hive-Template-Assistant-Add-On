@@ -341,8 +341,18 @@ final class PH_Template_Assistant {
             'id'        => 'search_result_css',
             'type'      => 'textarea',
             'default'   => ( isset($current_settings['search_result_css']) ? $current_settings['search_result_css'] : $columns_1_css . "\n\n" . $layout_1_css ),
-            'css'       => 'height:200px;width:100%;'
+            'css'       => 'height:200px;width:100%;',
         );
+
+        if ( isset($current_settings['search_result_css']) && trim($current_settings['search_result_css']) != '' )
+        {
+            $settings[] = array(
+                'type'      => 'html',
+                'html'      => '<div id="change_warning" style="display:none; color:#900">
+                    By changing the options above the CSS been regenerated. Please note that this will overwrite any customisations you\'ve previously made to the CSS.
+                </div>'
+            );
+        }
 
         $settings[] = array(
             'type'      => 'html',
@@ -363,6 +373,8 @@ final class PH_Template_Assistant {
                 function generate_search_results_css()
                 {
                     jQuery(\'#search_result_css\').val(\'\');
+
+                    jQuery(\'#change_warning\').slideDown();
 
                     var columns_css = \'\';
                     var layout_css = \'\';
