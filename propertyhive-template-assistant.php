@@ -731,11 +731,13 @@ final class PH_Template_Assistant {
 
         $current_settings = get_option( 'propertyhive_template_assistant', array() );
 
-        if ( !isset($current_settings['search_forms']) || isset($current_settings['search_forms']) && empty($current_settings['search_forms']) )
+        if ( !isset($current_settings['search_forms']) )
         {
-            $current_settings['search_forms'] = array(
-                'default' => array()
-            );
+            $current_settings['search_forms'] = array();
+        }
+        if ( !isset($current_settings['search_forms']['default']) )
+        {
+            $current_settings['search_forms']['default'] = array();
         }
 
         $current_id = ( !isset( $_REQUEST['id'] ) ) ? '' : sanitize_title( $_REQUEST['id'] );
@@ -926,11 +928,13 @@ final class PH_Template_Assistant {
 
         $current_settings = get_option( 'propertyhive_template_assistant', array() );
 
-        if ( !isset($current_settings['search_forms']) || isset($current_settings['search_forms']) && empty($current_settings['search_forms']) )
+        if ( !isset($current_settings['search_forms']) )
         {
-            $current_settings['search_forms'] = array(
-                'default' => array()
-            );
+            $current_settings['search_forms'] = array();
+        }
+        if ( !isset($current_settings['search_forms']['default']) )
+        {
+            $current_settings['search_forms']['default'] = array();
         }
 
         $current_id = ( !isset( $_REQUEST['id'] ) ) ? '' : sanitize_title( $_REQUEST['id'] );
