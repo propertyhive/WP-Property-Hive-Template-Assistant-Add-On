@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=N68UH
 Requires at least: 3.8
 Tested up to: 4.7.1
 Stable tag: trunk
-Version: 1.0.1
+Version: 1.0.2
 Homepage: http://wp-property-hive.com/addons/template-assistant/
 
 This add on for Property Hive assists with the layout of property pages.
@@ -27,6 +27,10 @@ Once installed and activated, you can access the settings for this add on by nav
 Updating should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 1.0.2 =
+* Added delete and reset options to search forms
+* Corrected issue where field type was sometimes being saved as blank
 
 = 1.0.1 =
 * Added a new search form builder allowing customisation of search forms through a settings UI as opposed to having to know about PHP hooks
