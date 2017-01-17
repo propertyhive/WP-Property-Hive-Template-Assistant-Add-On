@@ -58,6 +58,9 @@ final class PH_Template_Assistant {
         add_action( 'wp_enqueue_scripts', array( $this, 'load_template_assistant_scripts' ) );
         add_action( 'wp_head', array( $this, 'load_template_assistant_styles' ) );
 
+        add_action( 'admin_init', array( $this, 'check_for_reset_search_form') );
+        add_action( 'admin_init', array( $this, 'check_for_delete_search_form') );
+
         add_action( 'admin_notices', array( $this, 'template_assistant_error_notices') );
         add_action( 'admin_enqueue_scripts', array( $this, 'load_template_assistant_admin_scripts' ) );
 
@@ -127,6 +130,58 @@ final class PH_Template_Assistant {
                     return $fields;
                 } , 99, 1 );
             }
+        }
+    }
+
+    public function check_for_reset_search_form()
+    {
+        if ( isset($_GET['action']) && $_GET['action'] == 'resetsearchform' && isset($_GET['id']) && $_GET['id'] != '' )
+        {
+            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+            $current_id = ( !isset( $_GET['id'] ) ) ? '' : sanitize_title( $_GET['id'] );
+
+            $existing_search_forms = ( (isset($current_settings['search_forms'])) ? $current_settings['search_forms'] : array() );
+
+            if ( !isset($existing_search_forms[$current_id]) )
+            {
+                die("Trying to reset a non-existant search form. Please go back and try again");
+            }
+
+            if ( isset($existing_search_forms[$current_id]) )
+            {
+                $existing_search_forms[$current_id] = array();
+            }
+
+            $current_settings['search_forms'] = $existing_search_forms;
+
+            update_option( 'propertyhive_template_assistant', $current_settings );
+        }
+    }
+
+    public function check_for_delete_search_form()
+    {
+        if ( isset($_GET['action']) && $_GET['action'] == 'deletesearchform' && isset($_GET['id']) && $_GET['id'] != '' && $_GET['id'] != 'default' )
+        {
+            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+            $current_id = ( !isset( $_GET['id'] ) ) ? '' : sanitize_title( $_GET['id'] );
+
+            $existing_search_forms = ( (isset($current_settings['search_forms'])) ? $current_settings['search_forms'] : array() );
+
+            if ( !isset($existing_search_forms[$current_id]) )
+            {
+                die("Trying to delete a non-existant search form. Please go back and try again");
+            }
+
+            if ( isset($existing_search_forms[$current_id]) )
+            {
+                unset($existing_search_forms[$current_id]);
+            }
+
+            $current_settings['search_forms'] = $existing_search_forms;
+
+            update_option( 'propertyhive_template_assistant', $current_settings );
         }
     }
 
@@ -785,7 +840,9 @@ final class PH_Template_Assistant {
                                         echo '<td class="id">' . $id . '</td>';
                                         echo '<td class="shortcode"><pre style="background:#EEE; padding:5px; display:inline">[property_search_form id="' . $id . '"]</pre></td>';
                                         echo '<td class="settings">
-                                            <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=editsearchform&id=' . $id ) . '">' . __( 'Edit', 'propertyhive' ) . '</a>
+                                            <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=editsearchform&id=' . $id ) . '">' . __( 'Edit Fields', 'propertyhive' ) . '</a>
+                                            <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=search-forms&action=resetsearchform&id=' . $id ) . '">' . __( 'Reset To Default Fields', 'propertyhive' ) . '</a>
+                                            ' .  ( ( $id != 'default' ) ? '<a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=search-forms&action=deletesearchform&id=' . $id ) . '">' . __( 'Delete', 'propertyhive' ) . '</a>' : '' ) . '
                                         </td>';
                                     echo '</tr>';
                                 }
