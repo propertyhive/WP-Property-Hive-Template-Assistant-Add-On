@@ -479,11 +479,14 @@ final class PH_Template_Assistant {
                             foreach ( $field_ids as $field_id )
                             {
                                 $active_fields[$field_id] = array(
-                                    'type' => ( isset($_POST['type'][$field_id]) ? stripslashes($_POST['type'][$field_id]) : '' ),
                                     'show_label' => ( ( isset($_POST['show_label'][$field_id]) && $_POST['show_label'][$field_id] == '1' ) ? true : false ),
                                     'label' => ( isset($_POST['label'][$field_id]) ? stripslashes($_POST['label'][$field_id]) : '' ),
                                 );
 
+                                if ( isset($_POST['type'][$field_id]) && $_POST['type'][$field_id] != '' )
+                                {
+                                    $active_fields[$field_id]['type'] = stripslashes($_POST['type'][$field_id]);
+                                }
                                 if ( isset($_POST['before'][$field_id]) && $_POST['before'][$field_id] != '' )
                                 {
                                     $active_fields[$field_id]['before'] = stripslashes($_POST['before'][$field_id]);
@@ -514,11 +517,14 @@ final class PH_Template_Assistant {
                             foreach ( $field_ids as $field_id )
                             {
                                 $inactive_fields[$field_id] = array(
-                                    'type' => ( isset($_POST['type'][$field_id]) ? stripslashes($_POST['type'][$field_id]) : '' ),
                                     'show_label' => ( ( isset($_POST['show_label'][$field_id]) && $_POST['show_label'][$field_id] == '1' ) ? true : false ),
                                     'label' => ( isset($_POST['label'][$field_id]) ? stripslashes($_POST['label'][$field_id]) : '' ),
                                 );
 
+                                if ( isset($_POST['type'][$field_id]) && $_POST['type'][$field_id] != '' )
+                                {
+                                    $inactive_fields[$field_id]['type'] = stripslashes($_POST['type'][$field_id]);
+                                }
                                 if ( isset($_POST['before'][$field_id]) && $_POST['before'][$field_id] != '' )
                                 {
                                     $inactive_fields[$field_id]['before'] = stripslashes($_POST['before'][$field_id]);
