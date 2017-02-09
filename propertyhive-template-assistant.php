@@ -1034,6 +1034,28 @@ final class PH_Template_Assistant {
             'before' => '<div class="control control-furnished lettings-only">'
         );
 
+        $bathrooms = array(
+            '' => __( 'No preference', 'propertyhive' ),
+            '1' => '1',
+            '2' => '2',
+            '3' => '3',
+            '4' => '4',
+            '5' => '5',
+        );
+
+        $all_fields['minimum_bathrooms'] = array(
+            'type' => 'select',
+            'label' => __( 'Min Bathrooms', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-minimum-bathrooms residential-only">',
+            'options' => $bathrooms
+        );
+        $all_fields['maximum_bathrooms'] = array(
+            'type' => 'select',
+            'label' => __( 'Max Bathrooms', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-maximum-bathrooms residential-only">',
+            'options' => $bathrooms
         );
 
         $form_controls = ph_get_search_form_fields();
