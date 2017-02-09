@@ -463,7 +463,7 @@ final class PH_Template_Assistant {
                     }
 
                     $current_id = ( ( isset($_POST['form_id']) && $_POST['form_id'] != '' ) ? str_replace("-", "_", sanitize_title($_POST['form_id'])) : $current_id );
-                    if ($current_section == 'addsearchform' && trim($current_id) != '' )
+                    if ($current_section == 'addsearchform' && trim($current_id) == '' )
                     {
                         $current_id = 'custom';
                     }
