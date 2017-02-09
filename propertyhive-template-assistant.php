@@ -995,13 +995,13 @@ final class PH_Template_Assistant {
             'type' => 'parking',
             'label' => __( 'Parking', 'propertyhive' ),
             'show_label' => true,
-            'before' => '<div class="control control-parking">'
+            'before' => '<div class="control control-parking residential-only">'
         );
         $all_fields['outside_space'] = array(
             'type' => 'outside_space',
             'label' => __( 'Outside Space', 'propertyhive' ),
             'show_label' => true,
-            'before' => '<div class="control control-outside_space">'
+            'before' => '<div class="control control-outside_space residential-only">'
         );
         $all_fields['availability'] = array(
             'type' => 'availability',
@@ -1031,7 +1031,9 @@ final class PH_Template_Assistant {
             'type' => 'furnished',
             'label' => __( 'Furnished', 'propertyhive' ),
             'show_label' => true,
-            'before' => '<div class="control control-furnished">'
+            'before' => '<div class="control control-furnished lettings-only">'
+        );
+
         );
 
         $form_controls = ph_get_search_form_fields();
