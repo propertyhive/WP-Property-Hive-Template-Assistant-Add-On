@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=N68UH
 Requires at least: 3.8
 Tested up to: 4.7.2
 Stable tag: trunk
-Version: 1.0.3
+Version: 1.0.4
 Homepage: http://wp-property-hive.com/addons/template-assistant/
 
 This add on for Property Hive assists with the layout of property pages.
@@ -27,6 +27,10 @@ Once installed and activated, you can access the settings for this add on by nav
 Updating should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 1.0.4 =
+* Allow changing of type of department control between select and radio
+* Tweaks to default search results CSS loaded
 
 = 1.0.3 =
 * Added new min/max bathrooms to list of selectable control in search form builder
