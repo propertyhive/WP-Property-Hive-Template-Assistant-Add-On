@@ -1067,6 +1067,12 @@ final class PH_Template_Assistant {
             'before' => '<div class="control control-maximum-bathrooms residential-only">',
             'options' => $bathrooms
         );
+        $all_fields['available_date_from'] = array(
+            'type' => 'date',
+            'label' => __( 'Available From', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-available_date_from lettings-only">'
+        );
 
         $form_controls = ph_get_search_form_fields();
         $active_fields = apply_filters( 'propertyhive_search_form_fields_' . $current_id, $form_controls );
