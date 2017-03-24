@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Property Hive Template Assistant Add On
- * Plugin Uri: http://wp-property-hive.com/addons/template-assistat/
+ * Plugin Uri: http://wp-property-hive.com/addons/template-assistant/
  * Description: Add On for Property Hive which assists with the layout of property pages
  * Version: 1.0.4
  * Author: PropertyHive
