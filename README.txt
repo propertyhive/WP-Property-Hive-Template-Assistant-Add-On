@@ -5,14 +5,14 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=N68UH
 Requires at least: 3.8
 Tested up to: 4.7.3
 Stable tag: trunk
-Version: 1.0.5
+Version: 1.0.6
 Homepage: http://wp-property-hive.com/addons/template-assistant/
 
-This add on for Property Hive assists with the layout of property pages.
+This add on for Property Hive assists with the layout of property pages and more.
 
 == Description ==
 
-This add on for Property Hive assists with the layout of property pages. Currently only provides assistance with the search results page.
+This add on for Property Hive assists with the layout of property search page, the fields shown on search forms and allows you to manage custom fields on the property record.
 
 == Installation ==
 
@@ -27,6 +27,9 @@ Once installed and activated, you can access the settings for this add on by nav
 Updating should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 1.0.6 =
+* Added ability to add and manage custom fields on property record
 
 = 1.0.5 =
 * Added new 'Available From' field available for selection when building search forms
