@@ -60,6 +60,7 @@ final class PH_Template_Assistant {
 
         add_action( 'admin_init', array( $this, 'check_for_reset_search_form') );
         add_action( 'admin_init', array( $this, 'check_for_delete_search_form') );
+        add_action( 'admin_init', array( $this, 'check_for_delete_custom_field') );
 
         add_action( 'admin_notices', array( $this, 'template_assistant_error_notices') );
         add_action( 'admin_enqueue_scripts', array( $this, 'load_template_assistant_admin_scripts' ) );
@@ -71,6 +72,8 @@ final class PH_Template_Assistant {
 
         add_action( 'propertyhive_admin_field_search_forms_table', array( $this, 'search_forms_table' ) );
         add_action( 'propertyhive_admin_field_search_form_fields', array( $this, 'search_form_fields' ) );
+
+        add_action( 'propertyhive_admin_field_custom_fields_table', array( $this, 'custom_fields_table' ) );
 
         // Set columns
         add_filter( 'loop_search_results_per_page',  array( $this, 'template_assistant_loop_search_results_per_page' ) );
@@ -131,6 +134,54 @@ final class PH_Template_Assistant {
                 } , 99, 1 );
             }
         }
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            $meta_boxes_done = array();
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( !in_array( $custom_field['meta_box'], $meta_boxes_done ) )
+                {
+                    add_filter( 'propertyhive_' . $custom_field['meta_box'] . '_fields', function()
+                    {
+                        $meta_box_being_done = str_replace( "propertyhive_", "", current_filter() );
+                        $meta_box_being_done = str_replace( "_fields", "", $meta_box_being_done );
+
+                        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+                        foreach ( $current_settings['custom_fields'] as $custom_field )
+                        {
+                            if ( $custom_field['meta_box'] == $meta_box_being_done )
+                            {
+                                propertyhive_wp_text_input( array( 
+                                    'id' => $custom_field['field_name'], 
+                                    'label' => $custom_field['field_label'], 
+                                    'desc_tip' => false,
+                                    'type' => 'text'
+                                ) );
+                            }
+                        }
+                    });
+
+                    add_action( 'propertyhive_save_' . $custom_field['meta_box'],  function( $post_id )
+                    {
+                        $meta_box_being_done = str_replace( "propertyhive_save_", "", current_filter() );
+
+                        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+                        foreach ( $current_settings['custom_fields'] as $custom_field )
+                        {
+                            if ( $custom_field['meta_box'] == $meta_box_being_done )
+                            {
+                                update_post_meta( $post_id, $custom_field['field_name'], $_POST[$custom_field['field_name']] );
+                            }
+                        }
+                    });
+
+                    $meta_boxes_done[] = $custom_field['meta_box'];
+                }
+            }
+        }
     }
 
     public function check_for_reset_search_form()
@@ -185,6 +236,32 @@ final class PH_Template_Assistant {
         }
     }
 
+    public function check_for_delete_custom_field()
+    {
+        if ( isset($_GET['action']) && $_GET['action'] == 'deletecustomfield' && isset($_GET['id']) && $_GET['id'] != '' )
+        {
+            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+            $current_id = ( !isset( $_GET['id'] ) ) ? '' : sanitize_title( $_GET['id'] );
+
+            $existing_custom_fields = ( (isset($current_settings['custom_fields'])) ? $current_settings['custom_fields'] : array() );
+
+            if ( !isset($existing_custom_fields[$current_id]) )
+            {
+                die("Trying to delete a non-existant custom field. Please go back and try again");
+            }
+
+            if ( isset($existing_custom_fields[$current_id]) )
+            {
+                unset($existing_custom_fields[$current_id]);
+            }
+
+            $current_settings['custom_fields'] = $existing_custom_fields;
+
+            update_option( 'propertyhive_template_assistant', $current_settings );
+        }
+    }
+
     /**
      * Output sections
      */
@@ -194,6 +271,7 @@ final class PH_Template_Assistant {
         $sections = array(
             ''         => __( 'Search Results', 'propertyhive' ),
             'search-forms'         => __( 'Search Forms', 'propertyhive' ),
+            'custom-fields'        => __( 'Custom Fields', 'propertyhive' ),
         );
 
         if ( empty( $sections ) )
@@ -413,6 +491,9 @@ final class PH_Template_Assistant {
                 case "search-forms": { $hide_save_button = true; $settings = $this->get_template_assistant_search_forms_settings(); break; }
                 case "addsearchform": { $settings = $this->get_template_assistant_search_form_settings(); break; }
                 case "editsearchform": { $settings = $this->get_template_assistant_search_form_settings(); break; }
+                case "custom-fields": { $hide_save_button = true; $settings = $this->get_template_assistant_custom_fields_settings(); break; }
+                case "addcustomfield": { $settings = $this->get_template_assistant_custom_field_settings(); break; }
+                case "editcustomfield": { $settings = $this->get_template_assistant_custom_field_settings(); break; }
                 default: { die("Unknown setting section"); }
             }
         }
@@ -553,6 +634,50 @@ final class PH_Template_Assistant {
                     );
 
                     $current_settings['search_forms'] = $existing_search_forms;
+
+                    update_option( 'propertyhive_template_assistant', $current_settings );
+
+                    break; 
+                }
+                case "addcustomfield": 
+                case "editcustomfield": 
+                {
+                    $current_id = ( !isset( $_REQUEST['id'] ) ) ? '' : sanitize_title( $_REQUEST['id'] );
+
+                    $existing_custom_fields = ( (isset($current_settings['custom_fields'])) ? $current_settings['custom_fields'] : array() );
+
+                    if ( $current_section == 'editcustomfield' && $current_id != 'default' && !isset($existing_custom_fields[$current_id]) )
+                    {
+                        die("Trying to edit a non-existant custom field. Please go back and try again");
+                    }
+
+                    $field_name = trim( ( ( isset($_POST['field_name']) ) ? $_POST['field_name'] : '' ) );
+
+                    if ( $field_name == '' )
+                    {
+                        $field_name = str_replace("-", "_", sanitize_title( $_POST['field_label'] ) );
+                    }
+
+                    $field_name = '_' . ltrim( $field_name, '_' );
+
+                    if ( $current_section == 'addcustomfield' )
+                    {
+                        $existing_custom_fields[] = array(
+                            'field_label' => $_POST['field_label'],
+                            'field_name' => $field_name,
+                            'meta_box' => $_POST['meta_box'],
+                        );
+                    }
+                    else
+                    {
+                        $existing_custom_fields[$current_id] = array(
+                            'field_label' => $_POST['field_label'],
+                            'field_name' => $field_name,
+                            'meta_box' => $_POST['meta_box'],
+                        );
+                    }
+
+                    $current_settings['custom_fields'] = $existing_custom_fields;
 
                     update_option( 'propertyhive_template_assistant', $current_settings );
 
@@ -1246,6 +1371,181 @@ final class PH_Template_Assistant {
 <?php
     }
 
+    public function get_template_assistant_custom_fields_settings()
+    {
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        $settings = array(
+
+            array( 'title' => __( 'Custom Fields', 'propertyhive' ), 'type' => 'title', 'desc' => '', 'id' => 'template_assistant_custom_fields_settings' )
+
+        );
+
+        $settings[] = array(
+            'type' => 'custom_fields_table',
+        );
+
+        $settings[] = array( 'type' => 'sectionend', 'id' => 'template_assistant_custom_fields_settings');
+
+        return $settings;
+    }
+
+    /**
+     * Output list of search forms
+     *
+     * @access public
+     * @return void
+     */
+    public function custom_fields_table() {
+        global $wpdb, $post;
+        ?>
+        <tr valign="top">
+            <th scope="row" class="titledesc">
+                &nbsp;
+            </th>
+            <td class="forminp forminp-button">
+                <a href="<?php echo admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=addcustomfield' ); ?>" class="button alignright"><?php echo __( 'Add New Custom Field', 'propertyhive' ); ?></a>
+            </td>
+        </tr>
+        <tr valign="top">
+            <th scope="row" class="titledesc"><?php _e( 'Custom Fields', 'propertyhive' ) ?></th>
+            <td class="forminp">
+                <table class="ph_portals widefat" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th class="field-label"><?php _e( 'Field Name', 'propertyhive' ); ?></th>
+                            <th class="section"><?php _e( 'Section', 'propertyhive' ); ?></th>
+                            <th class="usage"><?php _e( 'Usage', 'propertyhive' ); ?></th>
+                            <th class="settings">&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+
+                            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+                            $custom_fields = array();
+                            if ($current_settings !== FALSE)
+                            {
+                                if (isset($current_settings['custom_fields']))
+                                {
+                                    $custom_fields = $current_settings['custom_fields'];
+                                }
+                            }
+
+                            if (!empty($custom_fields))
+                            {
+                                foreach ($custom_fields as $id => $custom_field)
+                                {
+                                    echo '<tr>';
+                                        echo '<td class="field-label">' . $custom_field['field_label'] . '</td>';
+                                        echo '<td class="section">' . ucwords( str_replace("_", " ", $custom_field['meta_box']) ) . '</td>';
+                                        echo '<td class="usage"><pre style="background:#EEE; padding:5px; display:inline">&lt;?php $property->' . ltrim( $custom_field['field_name'], '_' ) . '; ?&gt;</pre></td>';
+                                        echo '<td class="settings">
+                                            <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=editcustomfield&id=' . $id ) . '">' . __( 'Edit Fields', 'propertyhive' ) . '</a>
+                                            <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=custom-fields&action=deletecustomfield&id=' . $id ) . '">' . __( 'Delete', 'propertyhive' ) . '</a>
+                                        </td>';
+                                    echo '</tr>';
+                                }
+                            }
+                            else
+                            {
+                                echo '<tr>';
+                                    echo '<td align="center" colspan="4">' . __( 'No custom fields exist', 'propertyhive' ) . '</td>';
+                                echo '</tr>';
+                            }
+                        ?>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        <tr valign="top">
+            <th scope="row" class="titledesc">
+                &nbsp;
+            </th>
+            <td class="forminp forminp-button">
+                <a href="<?php echo admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=addcustomfield' ); ?>" class="button alignright"><?php echo __( 'Add New Custom Field', 'propertyhive' ); ?></a>
+            </td>
+        </tr>
+        <?php
+    }
+
+    public function get_template_assistant_custom_field_settings()
+    {
+        global $current_section;
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( !isset($current_settings['custom_fields']) )
+        {
+            $current_settings['custom_fields'] = array();
+        }
+
+        $current_id = ( !isset( $_REQUEST['id'] ) ) ? '' : sanitize_title( $_REQUEST['id'] );
+
+        $custom_field_details = array();
+
+        if ($current_id != '')
+        {
+            $custom_fields = $current_settings['custom_fields'];
+
+            if (isset($custom_fields[$current_id]))
+            {
+                $custom_field_details = $custom_fields[$current_id];
+            }
+            else
+            {
+                die('Trying to edit a custom field which does not exist. Please go back and try again.');
+            }
+        }
+
+        $settings = array(
+
+            array( 'title' => __( ( $current_section == 'addcustomfield' ? 'Add Custom Field' : 'Edit Custom Field' ), 'propertyhive' ), 'type' => 'title', 'desc' => '', 'id' => 'customfield' ),
+
+        );
+
+        $settings[] = array(
+            'title' => __( 'Field Label', 'propertyhive' ),
+            'id'        => 'field_label',
+            'default'   => ( (isset($custom_field_details['field_label'])) ? $custom_field_details['field_label'] : ''),
+            'type'      => 'text',
+            'desc_tip'  =>  false,
+            'custom_attributes' => array(
+                'placeholder' => 'My New Field'
+            )
+        );
+
+        if ( isset($custom_field_details['field_name']) )
+        {
+            $settings[] = array(
+                'title' => __( 'Field Name', 'propertyhive' ),
+                'id'        => 'field_name',
+                'default'   => ( (isset($custom_field_details['field_name'])) ? $custom_field_details['field_name'] : ''),
+                'type'      => 'text',
+                'desc'  => __( 'Please note that changing this after properties have been saved will result in any data entered being lost', 'propertyhive' ),
+            );
+        }
+
+        $settings[] = array(
+            'title' => __( 'Section', 'propertyhive' ),
+            'id'        => 'meta_box',
+            'default'   => ( (isset($custom_field_details['meta_box'])) ? $custom_field_details['meta_box'] : ''),
+            'type'      => 'select',
+            'desc'  =>  __( 'Please select which meta box on the property record this field should appear in', 'propertyhive' ),
+            'options' => array(
+                'property_address' => 'Property Address',
+                'property_department' => 'Property Department',
+                'property_residential_details' => 'Property Residential Details',
+                'property_residential_sales_details' => 'Property Residential Sales Details',
+                'property_residential_lettings_details' => 'Property Residential Lettings Details',
+                'property_commercial_details' => 'Property Commercial Details',
+            )
+        );
+
+        $settings[] = array( 'type' => 'sectionend', 'id' => 'customfield');
+
+        return $settings;
+    }
 }
 
 endif;
