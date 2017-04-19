@@ -80,6 +80,8 @@ final class PH_Template_Assistant {
         add_filter( 'loop_search_results_columns', array( $this, 'template_assistant_search_result_columns' ) );
         add_filter( 'post_class', array( $this, 'template_assistant_property_columns_post_class'), 20, 3 );
 
+        add_action( 'propertyhive_property_meta_list_end', array( $this, 'display_custom_fields_on_website' ) );
+
         $current_settings = get_option( 'propertyhive_template_assistant', array() );
         if ( isset($current_settings['search_forms']) && !empty($current_settings['search_forms']) )
         {
@@ -180,6 +182,23 @@ final class PH_Template_Assistant {
 
                     $meta_boxes_done[] = $custom_field['meta_box'];
                 }
+            }
+        }
+    }
+
+    public function display_custom_fields_on_website()
+    {
+        global $property;
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        $custom_fields = ( (isset($current_settings['custom_fields'])) ? $current_settings['custom_fields'] : array() );
+
+        foreach ( $custom_fields as $custom_field )
+        {
+            if ( isset($custom_field['display_on_website']) && $custom_field['display_on_website'] == '1' )
+            {
+                if ( $property->{$custom_field['field_name']} != '' ) { ?><li class="<?php echo trim($custom_field['field_name'], '_'); ?>"><?php echo $custom_field['field_label']; echo ': ' . $property->{$custom_field['field_name']}; ?></li><?php }
             }
         }
     }
@@ -666,6 +685,7 @@ final class PH_Template_Assistant {
                             'field_label' => $_POST['field_label'],
                             'field_name' => $field_name,
                             'meta_box' => $_POST['meta_box'],
+                            'display_on_website' => ( ( isset($_POST['display_on_website']) ) ? $_POST['display_on_website'] : '' ),
                         );
                     }
                     else
@@ -674,6 +694,7 @@ final class PH_Template_Assistant {
                             'field_label' => $_POST['field_label'],
                             'field_name' => $field_name,
                             'meta_box' => $_POST['meta_box'],
+                            'display_on_website' => ( ( isset($_POST['display_on_website']) ) ? $_POST['display_on_website'] : '' ),
                         );
                     }
 
@@ -1416,6 +1437,7 @@ final class PH_Template_Assistant {
                             <th class="field-label"><?php _e( 'Field Name', 'propertyhive' ); ?></th>
                             <th class="section"><?php _e( 'Section', 'propertyhive' ); ?></th>
                             <th class="usage"><?php _e( 'Usage', 'propertyhive' ); ?></th>
+                            <th class="website"><?php _e( 'Display On Website', 'propertyhive' ); ?></th>
                             <th class="settings">&nbsp;</th>
                         </tr>
                     </thead>
@@ -1440,8 +1462,9 @@ final class PH_Template_Assistant {
                                         echo '<td class="field-label">' . $custom_field['field_label'] . '</td>';
                                         echo '<td class="section">' . ucwords( str_replace("_", " ", $custom_field['meta_box']) ) . '</td>';
                                         echo '<td class="usage"><pre style="background:#EEE; padding:5px; display:inline">&lt;?php $property->' . ltrim( $custom_field['field_name'], '_' ) . '; ?&gt;</pre></td>';
+                                        echo '<td class="website">' . ( ( isset($custom_field['display_on_website']) && $custom_field['display_on_website'] == '1' ) ? 'Yes' : 'No' ) . '</td>';
                                         echo '<td class="settings">
-                                            <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=editcustomfield&id=' . $id ) . '">' . __( 'Edit Fields', 'propertyhive' ) . '</a>
+                                            <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=editcustomfield&id=' . $id ) . '">' . __( 'Edit Field', 'propertyhive' ) . '</a>
                                             <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=custom-fields&action=deletecustomfield&id=' . $id ) . '">' . __( 'Delete', 'propertyhive' ) . '</a>
                                         </td>';
                                     echo '</tr>';
@@ -1541,6 +1564,14 @@ final class PH_Template_Assistant {
                 'property_commercial_details' => 'Property Commercial Details',
             )
         );
+
+        $settings[] = array(
+                'title' => __( 'Display On Website', 'propertyhive' ),
+                'id'        => 'display_on_website',
+                'default'   => ( (isset($custom_field_details['display_on_website']) && $custom_field_details['display_on_website'] == '1') ? 'yes' : ''),
+                'type'      => 'checkbox',
+                'desc_tip'  =>  false,
+            );
 
         $settings[] = array( 'type' => 'sectionend', 'id' => 'customfield');
 
