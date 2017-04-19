@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=N68UH
 Requires at least: 3.8
 Tested up to: 4.7.3
 Stable tag: trunk
-Version: 1.0.6
+Version: 1.0.7
 Homepage: http://wp-property-hive.com/addons/template-assistant/
 
 This add on for Property Hive assists with the layout of property pages and more.
@@ -27,6 +27,9 @@ Once installed and activated, you can access the settings for this add on by nav
 Updating should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 1.0.7 =
+* Choose if custom fields should be displayed on the website. Any chosen will be appended to the bullet points in the single-property/meta.php template.
 
 = 1.0.6 =
 * Added ability to add and manage custom fields on property record
