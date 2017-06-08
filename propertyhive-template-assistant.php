@@ -1190,6 +1190,23 @@ final class PH_Template_Assistant {
             'before' => '<div class="control control-furnished lettings-only">'
         );
 
+        $bedrooms = array(
+            '' => __( 'No preference', 'propertyhive' ),
+            '1' => '1',
+            '2' => '2',
+            '3' => '3',
+            '4' => '4',
+            '5' => '5',
+        );
+
+        $all_fields['bedrooms'] = array(
+            'type' => 'select',
+            'label' => __( 'Bedrooms', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-bedrooms residential-only">',
+            'options' => $bedrooms
+        );
+
         $bathrooms = array(
             '' => __( 'No preference', 'propertyhive' ),
             '1' => '1',
