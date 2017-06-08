@@ -1237,6 +1237,13 @@ final class PH_Template_Assistant {
             'before' => '<div class="control control-available_date_from lettings-only">'
         );
 
+        $all_fields['office'] = array(
+            'type' => 'office',
+            'label' => __( 'Office', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-office">'
+        );
+
         $form_controls = ph_get_search_form_fields();
         $active_fields = apply_filters( 'propertyhive_search_form_fields_' . $current_id, $form_controls );
 
