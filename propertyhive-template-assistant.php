@@ -595,6 +595,10 @@ final class PH_Template_Assistant {
                                 {
                                     $active_fields[$field_id]['after'] = stripslashes($_POST['after'][$field_id]);
                                 }
+                                if ( isset($_POST['placeholder'][$field_id]) && $_POST['placeholder'][$field_id] != '' )
+                                {
+                                    $active_fields[$field_id]['placeholder'] = stripslashes($_POST['placeholder'][$field_id]);
+                                }
 
                                 if ( isset($_POST['option_keys'][$field_id]) && is_array($_POST['option_keys'][$field_id]) && !empty($_POST['option_keys'][$field_id]) )
                                 {
@@ -632,6 +636,10 @@ final class PH_Template_Assistant {
                                 if ( isset($_POST['after'][$field_id]) && $_POST['after'][$field_id] != '' )
                                 {
                                     $inactive_fields[$field_id]['after'] = stripslashes($_POST['after'][$field_id]);
+                                }
+                                if ( isset($_POST['placeholder'][$field_id]) && $_POST['placeholder'][$field_id] != '' )
+                                {
+                                    $inactive_fields[$field_id]['placeholder'] = stripslashes($_POST['placeholder'][$field_id]);
                                 }
 
                                 if ( isset($_POST['option_keys'][$field_id]) && is_array($_POST['option_keys'][$field_id]) && !empty($_POST['option_keys'][$field_id]) )
@@ -1049,6 +1057,13 @@ final class PH_Template_Assistant {
                 <p><label for="before_'.$id.'">Before:</label> <input type="text" name="before[' . $id . ']" id="before_'.$id.'" value="' . ( ( isset($field['before']) ) ? htmlentities($field['before']) : '' ) . '"></p>
                 
                 <p><label for="after_'.$id.'">After:</label> <input type="text" name="after[' . $id . ']" id="after_'.$id.'" value="' . ( ( isset($field['after']) ) ? htmlentities($field['after']) : '' ) . '"></p>';
+
+        if ( isset($field['type']) && in_array($field['type'], array('text', 'email', 'date', 'number', 'password')) )
+        {
+            echo '
+            <p><label for="placeholder_'.$id.'">Placeholder:</label> <input type="text" name="placeholder[' . $id . ']" id="after_'.$id.'" value="' . ( ( isset($field['placeholder']) ) ? htmlentities($field['placeholder']) : '' ) . '"></p>
+            ';
+        }
 
         if ( isset($field['options']) && !taxonomy_exists($id) )
         {
