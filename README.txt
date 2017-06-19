@@ -3,9 +3,9 @@ Contributors: PropertyHive,BIOSTALL
 Tags: property hive, propertyhive
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=N68UHATHAEDLN&lc=GB&item_name=BIOSTALL&no_note=0&cn=Add%20special%20instructions%20to%20the%20seller%3a&no_shipping=1&currency_code=GBP&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Requires at least: 3.8
-Tested up to: 4.7.5
+Tested up to: 4.8
 Stable tag: trunk
-Version: 1.0.8
+Version: 1.0.9
 Homepage: http://wp-property-hive.com/addons/template-assistant/
 
 This add on for Property Hive assists with the layout of property pages and more.
@@ -27,6 +27,12 @@ Once installed and activated, you can access the settings for this add on by nav
 Updating should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 1.0.9 =
+* When adding custom fields you can now choose the type of field; text, textarea or dropdown. Choosing dropdown you can then customise the options
+* Added the ability to add any custom fields to the search form
+* Added the ability to add placeholder to text inputs in search form builder
+* Declare support for WordPress 4.8
 
 = 1.0.8 =
 * Added new 'Office' field to search form fields
