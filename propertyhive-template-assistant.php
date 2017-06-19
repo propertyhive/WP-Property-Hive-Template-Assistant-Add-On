@@ -83,6 +83,8 @@ final class PH_Template_Assistant {
 
         add_action( 'propertyhive_property_meta_list_end', array( $this, 'display_custom_fields_on_website' ) );
 
+        add_filter( 'propertyhive_property_query_meta_query', array( $this, 'custom_fields_in_meta_query' ) );
+
         $current_settings = get_option( 'propertyhive_template_assistant', array() );
         if ( isset($current_settings['search_forms']) && !empty($current_settings['search_forms']) )
         {
@@ -132,6 +134,27 @@ final class PH_Template_Assistant {
                         $new_ordered_fields[$field_id] = $fields[$field_id];
                     }
                     $fields = $new_ordered_fields;
+
+                    // Check if any of the fields at this point are setup as custom fields
+                    $custom_fields = ( ( isset($current_settings['custom_fields']) ) ? $current_settings['custom_fields'] : array() );
+
+                    foreach ( $fields as $field_id => $field )
+                    {
+                        foreach ( $custom_fields as $custom_field )
+                        {
+                            if ( $custom_field['field_name'] == $field_id && $custom_field['field_type'] == 'select' && isset($custom_field['dropdown_options']) && is_array($custom_field['dropdown_options']) )
+                            {
+                                $options = array('' => '');
+
+                                foreach ( $custom_field['dropdown_options'] as $dropdown_option )
+                                {
+                                    $options[$dropdown_option] = $dropdown_option;
+                                }
+
+                                $fields[$field_id]['options'] = $options;
+                            }
+                        }
+                    }
 
                     return $fields;
                 } , 99, 1 );
@@ -215,6 +238,41 @@ final class PH_Template_Assistant {
                 }
             }
         }
+    }
+
+    public function custom_fields_in_meta_query( $meta_query )
+    {
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( 
+                    isset( $_REQUEST[$custom_field['field_name']] ) && $_REQUEST[$custom_field['field_name']] != '' 
+                )
+                {
+                    if ( $custom_field['field_type'] == 'select' )
+                    {
+                        $meta_query = array(
+                            'key'     => $custom_field['field_name'],
+                            'value'   => sanitize_text_field( $_REQUEST[$custom_field['field_name']] ),
+                            'compare' => '=',
+                        );
+                    }
+                    else
+                    {
+                        $meta_query = array(
+                            'key'     => $custom_field['field_name'],
+                            'value'   => sanitize_text_field( $_REQUEST[$custom_field['field_name']] ),
+                            'compare' => 'LIKE',
+                        );
+                    }
+                }
+            }
+        }
+
+        return $meta_query;
     }
 
     public function display_custom_fields_on_website()
@@ -1070,7 +1128,7 @@ final class PH_Template_Assistant {
     {
         echo '
         <div class="group" id="' . $id . '">
-            <h3>' . $id . '</h3>
+            <h3>' . trim( $id, '_' ) . '</h3>
             <div>';
         if ( $id == 'department' )
         {
@@ -1293,6 +1351,20 @@ final class PH_Template_Assistant {
             'show_label' => true,
             'before' => '<div class="control control-office">'
         );
+
+        // Add any custom fields
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $id => $custom_field )
+            {
+                $all_fields[$custom_field['field_name']] = array(
+                    'type' => ( ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'select' ) ? $custom_field['field_type'] : 'text' ),
+                    'label' => $custom_field['field_label'],
+                    'show_label' => true,
+                    'before' => '<div class="control control-' . trim( $custom_field['field_name'], '_' ) . '">'
+                );
+            }
+        }
 
         $form_controls = ph_get_search_form_fields();
         $active_fields = apply_filters( 'propertyhive_search_form_fields_' . $current_id, $form_controls );
