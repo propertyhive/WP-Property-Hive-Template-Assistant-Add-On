@@ -72,6 +72,7 @@ final class PH_Template_Assistant {
 
         add_action( 'propertyhive_admin_field_search_forms_table', array( $this, 'search_forms_table' ) );
         add_action( 'propertyhive_admin_field_search_form_fields', array( $this, 'search_form_fields' ) );
+        add_action( 'propertyhive_admin_field_custom_field_dropdown_options', array( $this, 'custom_field_dropdown_options' ) );
 
         add_action( 'propertyhive_admin_field_custom_fields_table', array( $this, 'custom_fields_table' ) );
 
@@ -155,12 +156,42 @@ final class PH_Template_Assistant {
                         {
                             if ( $custom_field['meta_box'] == $meta_box_being_done )
                             {
-                                propertyhive_wp_text_input( array( 
-                                    'id' => $custom_field['field_name'], 
-                                    'label' => $custom_field['field_label'], 
-                                    'desc_tip' => false,
-                                    'type' => 'text'
-                                ) );
+                                if ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'select' )
+                                {
+                                    $options = array('' => '');
+                                    if ( isset($custom_field['dropdown_options']) && is_array($custom_field['dropdown_options']) && !empty($custom_field['dropdown_options']) )
+                                    {
+                                        foreach ( $custom_field['dropdown_options'] as $dropdown_option )
+                                        {
+                                            $options[$dropdown_option] = $dropdown_option;
+                                        }
+                                    }
+                                    propertyhive_wp_select( array( 
+                                        'id' => $custom_field['field_name'], 
+                                        'label' => $custom_field['field_label'], 
+                                        'desc_tip' => false,
+                                        'options' => $options
+                                    ) );
+                                }
+                                elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'textarea' )
+                                {
+                                    propertyhive_wp_textarea_input( array( 
+                                        'id' => $custom_field['field_name'], 
+                                        'label' => $custom_field['field_label'], 
+                                        'desc_tip' => false,
+                                        'type' => 'text'
+                                    ) );
+                                }
+                                else
+
+                                {
+                                    propertyhive_wp_text_input( array( 
+                                        'id' => $custom_field['field_name'], 
+                                        'label' => $custom_field['field_label'], 
+                                        'desc_tip' => false,
+                                        'type' => 'text'
+                                    ) );
+                                }
                             }
                         }
                     });
@@ -692,6 +723,8 @@ final class PH_Template_Assistant {
                         $existing_custom_fields[] = array(
                             'field_label' => $_POST['field_label'],
                             'field_name' => $field_name,
+                            'field_type' => ( ( isset($_POST['field_type']) && $_POST['field_type'] != '' ) ? $_POST['field_type'] : 'text' ),
+                            'dropdown_options' => ( ( isset($_POST['field_type']) && $_POST['field_type'] == 'select' && isset($_POST['dropdown_options']) ) ? $_POST['dropdown_options'] : '' ),
                             'meta_box' => $_POST['meta_box'],
                             'display_on_website' => ( ( isset($_POST['display_on_website']) ) ? $_POST['display_on_website'] : '' ),
                         );
@@ -701,6 +734,8 @@ final class PH_Template_Assistant {
                         $existing_custom_fields[$current_id] = array(
                             'field_label' => $_POST['field_label'],
                             'field_name' => $field_name,
+                            'field_type' => ( ( isset($_POST['field_type']) && $_POST['field_type'] != '' ) ? $_POST['field_type'] : 'text' ),
+                            'dropdown_options' => ( ( isset($_POST['field_type']) && $_POST['field_type'] == 'select' && isset($_POST['dropdown_options']) ) ? $_POST['dropdown_options'] : '' ),
                             'meta_box' => $_POST['meta_box'],
                             'display_on_website' => ( ( isset($_POST['display_on_website']) ) ? $_POST['display_on_website'] : '' ),
                         );
@@ -1589,6 +1624,25 @@ final class PH_Template_Assistant {
         }
 
         $settings[] = array(
+            'title' => __( 'Field Type', 'propertyhive' ),
+            'id'        => 'field_type',
+            'default'   => ( (isset($custom_field_details['field_type'])) ? $custom_field_details['field_type'] : 'text'),
+            'type'      => 'select',
+            'desc_tip'  =>  false,
+            'options'   => array(
+                'text' => 'Text',
+                'textarea' => 'Textarea',
+                'select' => 'Dropdown',
+            )
+        );
+
+        $settings[] = array(
+            'title' => __( 'Dropdown Options', 'propertyhive' ),
+            'id'        => 'dropdown_options',
+            'type'      => 'custom_field_dropdown_options',
+        );
+
+        $settings[] = array(
             'title' => __( 'Section', 'propertyhive' ),
             'id'        => 'meta_box',
             'default'   => ( (isset($custom_field_details['meta_box'])) ? $custom_field_details['meta_box'] : ''),
@@ -1615,6 +1669,106 @@ final class PH_Template_Assistant {
         $settings[] = array( 'type' => 'sectionend', 'id' => 'customfield');
 
         return $settings;
+    }
+
+    public function custom_field_dropdown_options()
+    {
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( !isset($current_settings['custom_fields']) )
+        {
+            $current_settings['custom_fields'] = array();
+        }
+
+        $current_id = ( !isset( $_REQUEST['id'] ) ) ? '' : sanitize_title( $_REQUEST['id'] );
+
+        $custom_field_details = array();
+
+        if ($current_id != '')
+        {
+            $custom_fields = $current_settings['custom_fields'];
+
+            if (isset($custom_fields[$current_id]))
+            {
+                $custom_field_details = $custom_fields[$current_id];
+            }
+            else
+            {
+                die('Trying to edit a custom field which does not exist. Please go back and try again.');
+            }
+        }
+
+        echo '
+        <tr valign="top" id="row_dropdown_options">
+            <th scope="row" class="titledesc">
+                <label for="field_type">Dropdown Options</label>
+            </th>
+            <td class="forminp forminp-dropdown-options"><div>';
+        if ( isset($custom_field_details['dropdown_options']) && !empty($custom_field_details['dropdown_options']) )
+        {
+            foreach ( $custom_field_details['dropdown_options'] as $dropdown_option )
+            {
+                echo '
+                    <div><input type="text" name="dropdown_options[]" value="' . $dropdown_option . '"> <a href="" class="delete-dropdown-option">Delete Option</a></div>
+                ';
+            }
+        }
+        else
+        {
+            // None exist
+            echo '
+                <div><input type="text" name="dropdown_options[]" placeholder="Add Option"> <a href="" class="delete-dropdown-option">Delete Option</a></div>
+            ';
+        }
+        echo '
+                </div>
+                <a href="" class="add-dropdown-option">Add New Option</a>
+            </td>
+        </tr>
+
+        <script>
+            jQuery(document).ready(function()
+            {
+                toggle_dropdown_options();
+
+                jQuery(\'#field_type\').change(function()
+                {
+                    toggle_dropdown_options();
+                });
+
+                jQuery(\'body\').on(\'click\', \'a.add-dropdown-option\', function(e)
+                {
+                    e.preventDefault();
+
+                    jQuery(\'.forminp-dropdown-options > div\').append(\'<div><input type="text" name="dropdown_options[]" placeholder="Add Option"> <a href="" class="delete-dropdown-option">Delete Option</a></div>\');
+                });
+
+                jQuery(\'body\').on(\'click\', \'a.delete-dropdown-option\', function(e)
+                {
+                    e.preventDefault();
+
+                    var confirmBox = confirm(\'Are you sure you wish to delete this option?\');
+
+                    if ( confirmBox )
+                    {
+                        jQuery(this).parent().remove();
+                    }
+                });
+            });
+
+            function toggle_dropdown_options()
+            {
+                if ( jQuery(\'#field_type\').val() == \'select\' )
+                {
+                    jQuery(\'#row_dropdown_options\').show();
+                }
+                else
+                {
+                    jQuery(\'#row_dropdown_options\').hide();
+                }
+            }
+        </script>
+        ';
     }
 }
 
