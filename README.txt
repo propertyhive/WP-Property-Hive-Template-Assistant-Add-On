@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=N68UH
 Requires at least: 3.8
 Tested up to: 4.8
 Stable tag: trunk
-Version: 1.0.9
+Version: 1.0.10
 Homepage: http://wp-property-hive.com/addons/template-assistant/
 
 This add on for Property Hive assists with the layout of property pages and more.
@@ -27,6 +27,9 @@ Once installed and activated, you can access the settings for this add on by nav
 Updating should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 1.0.10 =
+* Added ability to enter a 'Blank Option' when adding taxonomy field or custom field to search forms. Sets the first option in the dropdown and defaults to 'No Preference'
 
 = 1.0.9 =
 * When adding custom fields you can now choose the type of field; text, textarea or dropdown. Choosing dropdown you can then customise the options
