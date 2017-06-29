@@ -144,7 +144,7 @@ final class PH_Template_Assistant {
                         {
                             if ( $custom_field['field_name'] == $field_id && $custom_field['field_type'] == 'select' && isset($custom_field['dropdown_options']) && is_array($custom_field['dropdown_options']) )
                             {
-                                $options = array('' => '');
+                                $options = array('' => ( (isset($field['blank_option'])) ? $field['blank_option'] : '' ) );
 
                                 foreach ( $custom_field['dropdown_options'] as $dropdown_option )
                                 {
@@ -688,6 +688,10 @@ final class PH_Template_Assistant {
                                 {
                                     $active_fields[$field_id]['placeholder'] = stripslashes($_POST['placeholder'][$field_id]);
                                 }
+                                if ( isset($_POST['blank_option'][$field_id]) && $_POST['blank_option'][$field_id] != '' )
+                                {
+                                    $active_fields[$field_id]['blank_option'] = stripslashes($_POST['blank_option'][$field_id]);
+                                }
 
                                 if ( isset($_POST['option_keys'][$field_id]) && is_array($_POST['option_keys'][$field_id]) && !empty($_POST['option_keys'][$field_id]) )
                                 {
@@ -729,6 +733,10 @@ final class PH_Template_Assistant {
                                 if ( isset($_POST['placeholder'][$field_id]) && $_POST['placeholder'][$field_id] != '' )
                                 {
                                     $inactive_fields[$field_id]['placeholder'] = stripslashes($_POST['placeholder'][$field_id]);
+                                }
+                                if ( isset($_POST['blank_option'][$field_id]) && $_POST['blank_option'][$field_id] != '' )
+                                {
+                                    $inactive_fields[$field_id]['blank_option'] = stripslashes($_POST['blank_option'][$field_id]);
                                 }
 
                                 if ( isset($_POST['option_keys'][$field_id]) && is_array($_POST['option_keys'][$field_id]) && !empty($_POST['option_keys'][$field_id]) )
@@ -1158,7 +1166,14 @@ final class PH_Template_Assistant {
             ';
         }
 
-        if ( isset($field['options']) && !taxonomy_exists($id) )
+        if ( taxonomy_exists($id) || ( isset($field['custom_field']) && $field['custom_field'] === true && $field['type'] == 'select' ) )
+        {
+            echo '
+            <p><label for="blank_option_'.$id.'">Blank Option:</label> <input type="text" name="blank_option[' . $id . ']" id="blank_option_'.$id.'" value="' . ( ( isset($field['blank_option']) ) ? htmlentities($field['blank_option']) : __( 'No Preference', 'propertyhive' ) ) . '"></p>
+            ';
+        }
+
+        if ( isset($field['options']) && !taxonomy_exists($id) && ( !isset($field['custom_field']) || ( isset($field['custom_field']) && $field['custom_field'] === false ) ) )
         {
             echo '<p><label for="">Options: ';
             if ( $id != 'department' )
@@ -1352,6 +1367,9 @@ final class PH_Template_Assistant {
             'before' => '<div class="control control-office">'
         );
 
+        $form_controls = ph_get_search_form_fields();
+        $active_fields = apply_filters( 'propertyhive_search_form_fields_' . $current_id, $form_controls );
+
         // Add any custom fields
         if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
         {
@@ -1361,13 +1379,16 @@ final class PH_Template_Assistant {
                     'type' => ( ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'select' ) ? $custom_field['field_type'] : 'text' ),
                     'label' => $custom_field['field_label'],
                     'show_label' => true,
-                    'before' => '<div class="control control-' . trim( $custom_field['field_name'], '_' ) . '">'
+                    'before' => '<div class="control control-' . trim( $custom_field['field_name'], '_' ) . '">',
+                    'custom_field' => true,
                 );
+
+                if ( isset($active_fields[$custom_field['field_name']]) )
+                {
+                    $active_fields[$custom_field['field_name']]['custom_field'] = true;
+                }
             }
         }
-
-        $form_controls = ph_get_search_form_fields();
-        $active_fields = apply_filters( 'propertyhive_search_form_fields_' . $current_id, $form_controls );
 
         $inactive_fields = array();
         foreach ( $all_fields as $id => $field )
