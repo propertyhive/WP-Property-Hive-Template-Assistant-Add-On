@@ -76,6 +76,8 @@ final class PH_Template_Assistant {
 
         add_action( 'propertyhive_admin_field_custom_fields_table', array( $this, 'custom_fields_table' ) );
 
+        add_action( 'propertyhive_update_options_general', array( $this, 'reflect_updated_departments_in_search_forms' ) );
+
         // Set columns
         add_filter( 'loop_search_results_per_page',  array( $this, 'template_assistant_loop_search_results_per_page' ) );
         add_filter( 'loop_search_results_columns', array( $this, 'template_assistant_search_result_columns' ) );
@@ -238,6 +240,56 @@ final class PH_Template_Assistant {
                 }
             }
         }
+    }
+
+    public function reflect_updated_departments_in_search_forms()
+    {
+        $sales_active = get_option( 'propertyhive_active_departments_sales', '' );
+        $lettings_active = get_option( 'propertyhive_active_departments_lettings', '' );
+        $commercial_active = get_option( 'propertyhive_active_departments_commercial', '' );
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['search_forms']) && !empty($current_settings['search_forms']) )
+        {
+            foreach ( $current_settings['search_forms'] as $id => $form )
+            {
+                if ( isset($form['active_fields']) && isset($form['active_fields']['department']) && isset($form['active_fields']['department']['options']) )
+                {
+                    // We have a department field in this form. Check options match current department settings
+
+                    if ( $sales_active != 'yes' && isset($form['active_fields']['department']['options']['residential-sales']) )
+                    {
+                        unset($form['active_fields']['department']['options']['residential-sales']);
+                    }
+                    if ( $lettings_active != 'yes' && isset($form['active_fields']['department']['options']['residential-lettings']) )
+                    {
+                        unset($form['active_fields']['department']['options']['residential-lettings']);
+                    }
+                    if ( $commercial_active != 'yes' && isset($form['active_fields']['department']['options']['commercial']) )
+                    {
+                        unset($form['active_fields']['department']['options']['commercial']);
+                    }
+
+                    if ( $sales_active == 'yes' && !isset($form['active_fields']['department']['options']['residential-sales']) )
+                    {
+                        $form['active_fields']['department']['options']['residential-sales'] = 'Residential Sales';
+                    }
+                    if ( $lettings_active == 'yes' && !isset($form['active_fields']['department']['options']['residential-lettings']) )
+                    {
+                        $form['active_fields']['department']['options']['residential-lettings'] = 'Residential Lettings';
+                    }
+                    if ( $commercial_active == 'yes' && !isset($form['active_fields']['department']['options']['commercial']) )
+                    {
+                        $form['active_fields']['department']['options']['commercial'] = 'Commercial';
+                    }
+
+                    $current_settings['search_forms'][$id]['active_fields'] = $form['active_fields'];
+                }
+            }
+        }
+
+        update_option( 'propertyhive_template_assistant', $current_settings );
     }
 
     public function custom_fields_in_meta_query( $meta_query )
