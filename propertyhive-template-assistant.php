@@ -306,7 +306,7 @@ final class PH_Template_Assistant {
                 {
                     if ( $custom_field['field_type'] == 'select' )
                     {
-                        $meta_query = array(
+                        $meta_query[] = array(
                             'key'     => $custom_field['field_name'],
                             'value'   => sanitize_text_field( $_REQUEST[$custom_field['field_name']] ),
                             'compare' => '=',
@@ -314,7 +314,7 @@ final class PH_Template_Assistant {
                     }
                     else
                     {
-                        $meta_query = array(
+                        $meta_query[] = array(
                             'key'     => $custom_field['field_name'],
                             'value'   => sanitize_text_field( $_REQUEST[$custom_field['field_name']] ),
                             'compare' => 'LIKE',
