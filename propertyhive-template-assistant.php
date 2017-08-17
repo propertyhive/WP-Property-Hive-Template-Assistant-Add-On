@@ -490,6 +490,7 @@ final class PH_Template_Assistant {
     public function load_template_assistant_admin_scripts()
     {
         wp_enqueue_script( 'jquery-ui-accordion' );
+        wp_enqueue_script( 'jquery-ui-sortable' );
     }
 
     public function load_template_assistant_styles()
