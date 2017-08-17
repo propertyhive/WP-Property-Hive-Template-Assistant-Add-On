@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=N68UH
 Requires at least: 3.8
 Tested up to: 4.8.1
 Stable tag: trunk
-Version: 1.0.12
+Version: 1.0.13
 Homepage: http://wp-property-hive.com/addons/template-assistant/
 
 This add on for Property Hive assists with the layout of property pages and more.
@@ -27,6 +27,10 @@ Once installed and activated, you can access the settings for this add on by nav
 Updating should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 1.0.13 =
+* Corrected issue when filtering properties by custom fields added to search forms
+* Enqueue jquery-ui-sortable for use in search form builder page
 
 = 1.0.12 =
 * Added maximum bedrooms field to the list of fields available to choose from in search form builder
