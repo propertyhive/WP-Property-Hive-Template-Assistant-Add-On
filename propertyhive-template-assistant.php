@@ -144,7 +144,7 @@ final class PH_Template_Assistant {
                     {
                         foreach ( $custom_fields as $custom_field )
                         {
-                            if ( $custom_field['field_name'] == $field_id && $custom_field['field_type'] == 'select' && isset($custom_field['dropdown_options']) && is_array($custom_field['dropdown_options']) )
+                            if ( $custom_field['field_name'] == $field_id && ( $custom_field['field_type'] == 'select' || $custom_field['field_type'] == 'multiselect' ) && isset($custom_field['dropdown_options']) && is_array($custom_field['dropdown_options']) )
                             {
                                 $options = array('' => ( (isset($field['blank_option'])) ? $field['blank_option'] : '' ) );
 
@@ -154,6 +154,8 @@ final class PH_Template_Assistant {
                                 }
 
                                 $fields[$field_id]['options'] = $options;
+
+                                if ( $custom_field['field_type'] == 'multiselect' ) { $fields[$field_id]['type'] = 'select'; }
                             }
                         }
                     }
@@ -172,6 +174,8 @@ final class PH_Template_Assistant {
                 {
                     add_filter( 'propertyhive_' . $custom_field['meta_box'] . '_fields', function()
                     {
+                        global $thepostid;
+
                         $meta_box_being_done = str_replace( "propertyhive_", "", current_filter() );
                         $meta_box_being_done = str_replace( "_fields", "", $meta_box_being_done );
 
@@ -197,6 +201,34 @@ final class PH_Template_Assistant {
                                         'desc_tip' => false,
                                         'options' => $options
                                     ) );
+                                }
+                                elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'multiselect' )
+                                {
+?>
+<p class="form-field <?php echo $custom_field['field_name']; ?>_field"><label for="<?php echo $custom_field['field_name']; ?>"><?php _e( $custom_field['field_label'], 'propertyhive' ); ?></label>
+        <select id="<?php echo $custom_field['field_name']; ?>" name="<?php echo $custom_field['field_name']; ?>[]" multiple="multiple" data-placeholder="<?php _e( 'Select ' . $custom_field['field_label'], 'propertyhive' ); ?>" class="multiselect attribute_values">
+            <?php
+                $selected_values = get_post_meta( $thepostid, $custom_field['field_name'], true );
+                if ( $selected_values == '' )
+                {
+                    $selected_values = array();
+                }
+                
+                if ( isset($custom_field['dropdown_options']) && is_array($custom_field['dropdown_options']) && !empty($custom_field['dropdown_options']) )
+                {
+                    foreach ( $custom_field['dropdown_options'] as $dropdown_option )
+                    {
+                        echo '<option value="' . esc_attr( $dropdown_option ) . '"';
+                        if ( in_array( $dropdown_option, $selected_values ) )
+                        {
+                            echo ' selected';
+                        }
+                        echo '>' . esc_html( $dropdown_option ) . '</option>';
+                    }
+                }
+            ?>
+        </select>
+<?php
                                 }
                                 elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'textarea' )
                                 {
@@ -231,7 +263,7 @@ final class PH_Template_Assistant {
                         {
                             if ( $custom_field['meta_box'] == $meta_box_being_done )
                             {
-                                update_post_meta( $post_id, $custom_field['field_name'], $_POST[$custom_field['field_name']] );
+                                update_post_meta( $post_id, $custom_field['field_name'], (isset($_POST[$custom_field['field_name']]) ? $_POST[$custom_field['field_name']] : '') );
                             }
                         }
                     });
@@ -339,7 +371,19 @@ final class PH_Template_Assistant {
         {
             if ( isset($custom_field['display_on_website']) && $custom_field['display_on_website'] == '1' )
             {
-                if ( $property->{$custom_field['field_name']} != '' ) { ?><li class="<?php echo trim($custom_field['field_name'], '_'); ?>"><?php echo $custom_field['field_label']; echo ': ' . $property->{$custom_field['field_name']}; ?></li><?php }
+                if ( $custom_field['field_type'] == 'multiselect' )
+                {
+                    $values = get_post_meta( $property->id, $custom_field['field_name'], TRUE );
+                    if ( !empty($values) )
+                    {
+                        echo '<li class="' . trim($custom_field['field_name'], '_') . '">' . $custom_field['field_label'] . ': ';
+                        echo implode(", ", $values);
+                    }
+                }
+                else
+                {
+                    if ( $property->{$custom_field['field_name']} != '' ) { ?><li class="<?php echo trim($custom_field['field_name'], '_'); ?>"><?php echo $custom_field['field_label']; echo ': ' . $property->{$custom_field['field_name']}; ?></li><?php }
+                }
             }
         }
     }
@@ -843,7 +887,7 @@ final class PH_Template_Assistant {
                             'field_label' => $_POST['field_label'],
                             'field_name' => $field_name,
                             'field_type' => ( ( isset($_POST['field_type']) && $_POST['field_type'] != '' ) ? $_POST['field_type'] : 'text' ),
-                            'dropdown_options' => ( ( isset($_POST['field_type']) && $_POST['field_type'] == 'select' && isset($_POST['dropdown_options']) ) ? $_POST['dropdown_options'] : '' ),
+                            'dropdown_options' => ( ( isset($_POST['field_type']) && ( $_POST['field_type'] == 'select' || $_POST['field_type'] == 'multiselect' ) && isset($_POST['dropdown_options']) ) ? $_POST['dropdown_options'] : '' ),
                             'meta_box' => $_POST['meta_box'],
                             'display_on_website' => ( ( isset($_POST['display_on_website']) ) ? $_POST['display_on_website'] : '' ),
                         );
@@ -854,7 +898,7 @@ final class PH_Template_Assistant {
                             'field_label' => $_POST['field_label'],
                             'field_name' => $field_name,
                             'field_type' => ( ( isset($_POST['field_type']) && $_POST['field_type'] != '' ) ? $_POST['field_type'] : 'text' ),
-                            'dropdown_options' => ( ( isset($_POST['field_type']) && $_POST['field_type'] == 'select' && isset($_POST['dropdown_options']) ) ? $_POST['dropdown_options'] : '' ),
+                            'dropdown_options' => ( ( isset($_POST['field_type']) && ( $_POST['field_type'] == 'select' || $_POST['field_type'] == 'multiselect' ) && isset($_POST['dropdown_options']) ) ? $_POST['dropdown_options'] : '' ),
                             'meta_box' => $_POST['meta_box'],
                             'display_on_website' => ( ( isset($_POST['display_on_website']) ) ? $_POST['display_on_website'] : '' ),
                         );
@@ -1436,7 +1480,7 @@ final class PH_Template_Assistant {
             foreach ( $current_settings['custom_fields'] as $id => $custom_field )
             {
                 $all_fields[$custom_field['field_name']] = array(
-                    'type' => ( ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'select' ) ? $custom_field['field_type'] : 'text' ),
+                    'type' => ( ( isset($custom_field['field_type']) && ( $custom_field['field_type'] == 'select' || $custom_field['field_type'] == 'multiselect' ) ) ? 'select' : 'text' ),
                     'label' => $custom_field['field_label'],
                     'show_label' => true,
                     'before' => '<div class="control control-' . trim( $custom_field['field_name'], '_' ) . '">',
@@ -1786,6 +1830,7 @@ final class PH_Template_Assistant {
                 'text' => 'Text',
                 'textarea' => 'Textarea',
                 'select' => 'Dropdown',
+                'multiselect' => 'Multi-Select',
             )
         );
 
@@ -1911,7 +1956,7 @@ final class PH_Template_Assistant {
 
             function toggle_dropdown_options()
             {
-                if ( jQuery(\'#field_type\').val() == \'select\' )
+                if ( jQuery(\'#field_type\').val() == \'select\' || jQuery(\'#field_type\').val() == \'multiselect\' )
                 {
                     jQuery(\'#row_dropdown_options\').show();
                 }
