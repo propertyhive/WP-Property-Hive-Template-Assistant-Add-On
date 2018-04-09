@@ -1273,10 +1273,9 @@ final class PH_Template_Assistant {
         if ( isset($field['options']) && !taxonomy_exists($id) && ( !isset($field['custom_field']) || ( isset($field['custom_field']) && $field['custom_field'] === false ) ) )
         {
             echo '<p><label for="">Options: ';
-            if ( $id != 'department' )
-            {
-                echo '<a href="" class="add-search-form-field-option" id="add_search_form_field_option_' . $id . '">Add Option</a>';
-            }
+
+            echo '<a href="" class="add-search-form-field-option" id="add_search_form_field_option_' . $id . '">Add Option</a>';
+
             echo '</label><br>';
 
             echo '<span class="form-field-options" id="sortable_options_' . $id . '">';
