@@ -1283,7 +1283,7 @@ final class PH_Template_Assistant {
             $i = 0;
             foreach ( $field['options'] as $key => $value )
             {
-                echo '<span style="display:block">';
+                echo '<span style="display:block"><i class="fa fa-reorder" style="cursor:pointer; opacity:0.3"></i> ';
                 echo '<input type="text" name="option_keys[' . $id . '][]" value="' . $key . '">';
                 echo '<input type="text" name="options_values[' . $id . '][]" value="' . $value . '">';
                 echo '</span>';
@@ -1293,6 +1293,34 @@ final class PH_Template_Assistant {
             echo '</span>';
 
             echo '</p>';
+?>
+<script>
+            jQuery(document).ready(function($)
+            {
+                $( "#sortable_options_<?php echo $id; ?>" )
+                .sortable({
+                    axis: "y",
+                    handle: "i",
+                    stop: function( event, ui ) 
+                    {
+                        // IE doesn't register the blur when sorting
+                        // so trigger focusout handlers to remove .ui-state-focus
+                        //ui.item.children( "h3" ).triggerHandler( "focusout" );
+             
+                        // Refresh accordion to handle new order
+                        //$( this ).accordion( "refresh" );
+                    },
+                    update: function( event, ui ) 
+                    {
+                        // Update hidden fields
+                        var fields_order = $(this).sortable('toArray');
+                        
+                        //$('#active_fields_order').val( fields_order.join("|") );
+                    }
+                });
+            });
+        </script>
+<?php
         }
 
         echo '</div>
