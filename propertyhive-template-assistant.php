@@ -507,6 +507,16 @@ final class PH_Template_Assistant {
 
     public function load_template_assistant_scripts()
     {
+        $assets_path = str_replace( array( 'http:', 'https:' ), '', untrailingslashit( plugins_url( '/', __FILE__ ) ) ) . '/assets/';
+
+        wp_register_script( 
+            'ph-template-assistant', 
+            $assets_path . 'js/propertyhive-template-assistant.js', 
+            array('jquery'), 
+            PH_TEMPLATE_ASSISTANT_VERSION,
+            true
+        );
+
         if ( is_post_type_archive('property') )
         {
             $current_settings = get_option( 'propertyhive_template_assistant', array() );
@@ -516,16 +526,6 @@ final class PH_Template_Assistant {
                 isset($current_settings['search_result_layout']) == 2
             )
             {
-                $assets_path = str_replace( array( 'http:', 'https:' ), '', untrailingslashit( plugins_url( '/', __FILE__ ) ) ) . '/assets/';
-
-                wp_register_script( 
-                    'ph-template-assistant', 
-                    $assets_path . 'js/propertyhive-template-assistant.js', 
-                    array('jquery'), 
-                    PH_TEMPLATE_ASSISTANT_VERSION,
-                    true
-                );
-
                 wp_enqueue_script( 'ph-template-assistant' );
             }
         }
