@@ -1467,21 +1467,21 @@ final class PH_Template_Assistant {
             'type' => 'select',
             'label' => __( 'Max Beds', 'propertyhive' ),
             'show_label' => true,
-            'before' => '<div class="control control-maximum-bedrooms residential-only">',
+            'before' => '<div class="control control-maximum_bedrooms residential-only">',
             'options' => $bathrooms
         );
         $all_fields['minimum_bathrooms'] = array(
             'type' => 'select',
             'label' => __( 'Min Bathrooms', 'propertyhive' ),
             'show_label' => true,
-            'before' => '<div class="control control-minimum-bathrooms residential-only">',
+            'before' => '<div class="control control-minimum_bathrooms residential-only">',
             'options' => $bathrooms
         );
         $all_fields['maximum_bathrooms'] = array(
             'type' => 'select',
             'label' => __( 'Max Bathrooms', 'propertyhive' ),
             'show_label' => true,
-            'before' => '<div class="control control-maximum-bathrooms residential-only">',
+            'before' => '<div class="control control-maximum_bathrooms residential-only">',
             'options' => $bathrooms
         );
         $all_fields['available_date_from'] = array(
