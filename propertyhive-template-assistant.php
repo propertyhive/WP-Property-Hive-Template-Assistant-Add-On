@@ -1759,8 +1759,12 @@ final class PH_Template_Assistant {
                                     echo '<tr>';
                                         echo '<td class="field-label">' . $custom_field['field_label'] . '</td>';
                                         echo '<td class="section">' . ucwords( str_replace("_", " ", $custom_field['meta_box']) ) . '</td>';
-                                        echo '<td class="usage"><pre style="background:#EEE; padding:5px; display:inline">&lt;?php $property->' . ltrim( $custom_field['field_name'], '_' ) . '; ?&gt;</pre></td>';
-                                        echo '<td class="website">' . ( ( isset($custom_field['display_on_website']) && $custom_field['display_on_website'] == '1' ) ? 'Yes' : 'No' ) . '</td>';
+                                        echo '<td class="usage">';
+                                        if ( substr( $custom_field['meta_box'], 0, 8 ) == 'property' ) { echo '<pre style="background:#EEE; padding:5px; display:inline">&lt;?php $property->' . ltrim( $custom_field['field_name'], '_' ) . '; ?&gt;</pre>'; }else{ echo '-';}
+                                        echo '</td>';
+                                        echo '<td class="website">';
+                                        if ( substr( $custom_field['meta_box'], 0, 8 ) == 'property' ) { echo ( ( isset($custom_field['display_on_website']) && $custom_field['display_on_website'] == '1' ) ? 'Yes' : 'No' ); }else{ echo '-';}
+                                        echo '</td>';
                                         echo '<td class="settings">
                                             <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=editcustomfield&id=' . $id ) . '">' . __( 'Edit Field', 'propertyhive' ) . '</a>
                                             <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=custom-fields&action=deletecustomfield&id=' . $id ) . '">' . __( 'Delete', 'propertyhive' ) . '</a>
@@ -1880,6 +1884,8 @@ final class PH_Template_Assistant {
                 'property_residential_sales_details' => 'Property Residential Sales Details',
                 'property_residential_lettings_details' => 'Property Residential Lettings Details',
                 'property_commercial_details' => 'Property Commercial Details',
+                'contact_correspondence_address' => 'Contact Correspondence Address',
+                'contact_contact_details' => 'Contact Contact Details',
             )
         );
 
@@ -1888,7 +1894,8 @@ final class PH_Template_Assistant {
                 'id'        => 'display_on_website',
                 'default'   => ( (isset($custom_field_details['display_on_website']) && $custom_field_details['display_on_website'] == '1') ? 'yes' : ''),
                 'type'      => 'checkbox',
-                'desc_tip'  =>  false,
+                'desc_tip'  =>  true,
+                'desc'      => __( 'Only applicable to property related custom fields', 'propertyhive' )
             );
 
         $settings[] = array( 'type' => 'sectionend', 'id' => 'customfield');
