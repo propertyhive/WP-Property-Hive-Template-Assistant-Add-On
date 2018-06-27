@@ -239,8 +239,22 @@ final class PH_Template_Assistant {
                                         'type' => 'text'
                                     ) );
                                 }
+                                elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'date' )
+                                {
+                                    propertyhive_wp_text_input( array( 
+                                        'id' => $custom_field['field_name'], 
+                                        'label' => $custom_field['field_label'], 
+                                        'desc_tip' => false,
+                                        'type' => 'text',
+                                        'class' => 'short date-picker',
+                                        'placeholder' => 'YYYY-MM-DD',
+                                        'custom_attributes' => array(
+                                            'maxlength' => 10,
+                                            'pattern' => "[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])"
+                                        )
+                                    ) );
+                                }
                                 else
-
                                 {
                                     propertyhive_wp_text_input( array( 
                                         'id' => $custom_field['field_name'], 
@@ -379,6 +393,10 @@ final class PH_Template_Assistant {
                         echo '<li class="' . trim($custom_field['field_name'], '_') . '">' . $custom_field['field_label'] . ': ';
                         echo implode(", ", $values);
                     }
+                }
+                elseif ( $custom_field['field_type'] == 'date' )
+                {
+                    if ( $property->{$custom_field['field_name']} != '' ) { ?><li class="<?php echo trim($custom_field['field_name'], '_'); ?>"><?php echo $custom_field['field_label']; echo ': ' . date(get_option( 'date_format' ), strtotime($property->{$custom_field['field_name']})); ?></li><?php }
                 }
                 else
                 {
@@ -1862,6 +1880,7 @@ final class PH_Template_Assistant {
                 'textarea' => 'Textarea',
                 'select' => 'Dropdown',
                 'multiselect' => 'Multi-Select',
+                'date' => 'Date',
             )
         );
 
