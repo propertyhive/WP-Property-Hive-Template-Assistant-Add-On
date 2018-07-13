@@ -1453,7 +1453,7 @@ final class PH_Template_Assistant {
                                         echo '<td class="settings">
                                             <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=editsearchform&id=' . $id ) . '">' . __( 'Edit Fields', 'propertyhive' ) . '</a>
                                             <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=search-forms&action=resetsearchform&id=' . $id ) . '">' . __( 'Reset To Default Fields', 'propertyhive' ) . '</a>
-                                            ' .  ( ( $id != 'default' ) ? '<a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=search-forms&action=deletesearchform&id=' . $id ) . '">' . __( 'Delete', 'propertyhive' ) . '</a>' : '' ) . '
+                                            ' .  ( ( $id != 'default' ) ? '<a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=search-forms&action=deletesearchform&id=' . $id ) . '" onclick="var confirmBox = confirm(\'Are you sure you wish to delete this search form?\'); return confirmBox;">' . __( 'Delete', 'propertyhive' ) . '</a>' : '' ) . '
                                         </td>';
                                     echo '</tr>';
                                 }
@@ -2033,7 +2033,7 @@ final class PH_Template_Assistant {
                                         echo '</td>';
                                         echo '<td class="settings">
                                             <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=editcustomfield&id=' . $id ) . '">' . __( 'Edit Field', 'propertyhive' ) . '</a>
-                                            <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=custom-fields&action=deletecustomfield&id=' . $id ) . '">' . __( 'Delete', 'propertyhive' ) . '</a>
+                                            <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=custom-fields&action=deletecustomfield&id=' . $id ) . '" onclick="var confirmBox = confirm(\'Are you sure you wish to delete this custom field?\'); return confirmBox;">' . __( 'Delete', 'propertyhive' ) . '</a>
                                         </td>';
                                     echo '</tr>';
                                 }
