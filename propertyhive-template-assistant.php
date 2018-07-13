@@ -1119,7 +1119,7 @@ final class PH_Template_Assistant {
                         die("Trying to edit a non-existant custom field. Please go back and try again");
                     }
 
-                    $field_name = trim( ( ( isset($_POST['field_name']) ) ? $_POST['field_name'] : '' ) );
+                    $field_name = trim( ( ( isset($_POST['field_name']) ) ? sanitize_title( $_POST['field_name'] ) : '' ) );
 
                     if ( $field_name == '' )
                     {
@@ -2220,13 +2220,13 @@ final class PH_Template_Assistant {
             <th scope="row" class="titledesc">
                 <label for="field_type">Dropdown Options</label>
             </th>
-            <td class="forminp forminp-dropdown-options"><div>';
+            <td class="forminp forminp-dropdown-options"><div id="sortable_options_' . $current_id . '">';
         if ( isset($custom_field_details['dropdown_options']) && !empty($custom_field_details['dropdown_options']) )
         {
             foreach ( $custom_field_details['dropdown_options'] as $dropdown_option )
             {
                 echo '
-                    <div><input type="text" name="dropdown_options[]" value="' . $dropdown_option . '"> <a href="" class="delete-dropdown-option">Delete Option</a></div>
+                    <div><i class="fa fa-reorder" style="cursor:pointer; opacity:0.3"></i> <input type="text" name="dropdown_options[]" value="' . $dropdown_option . '"> <a href="" class="delete-dropdown-option">Delete Option</a></div>
                 ';
             }
         }
@@ -2234,7 +2234,7 @@ final class PH_Template_Assistant {
         {
             // None exist
             echo '
-                <div><input type="text" name="dropdown_options[]" placeholder="Add Option"> <a href="" class="delete-dropdown-option">Delete Option</a></div>
+                <div><i class="fa fa-reorder" style="cursor:pointer; opacity:0.3"></i> <input type="text" name="dropdown_options[]" placeholder="Add Option"> <a href="" class="delete-dropdown-option">Delete Option</a></div>
             ';
         }
         echo '
@@ -2257,7 +2257,7 @@ final class PH_Template_Assistant {
                 {
                     e.preventDefault();
 
-                    jQuery(\'.forminp-dropdown-options > div\').append(\'<div><input type="text" name="dropdown_options[]" placeholder="Add Option"> <a href="" class="delete-dropdown-option">Delete Option</a></div>\');
+                    jQuery(\'.forminp-dropdown-options > div\').append(\'<div><i class="fa fa-reorder" style="cursor:pointer; opacity:0.3"></i> <input type="text" name="dropdown_options[]" placeholder="Add Option"> <a href="" class="delete-dropdown-option">Delete Option</a></div>\');
                 });
 
                 jQuery(\'body\').on(\'click\', \'a.delete-dropdown-option\', function(e)
@@ -2269,6 +2269,28 @@ final class PH_Template_Assistant {
                     if ( confirmBox )
                     {
                         jQuery(this).parent().remove();
+                    }
+                });
+
+                jQuery( \'#sortable_options_' . $current_id . '\' )
+                .sortable({
+                    axis: "y",
+                    handle: "i",
+                    stop: function( event, ui ) 
+                    {
+                        // IE doesn\'t register the blur when sorting
+                        // so trigger focusout handlers to remove .ui-state-focus
+                        //ui.item.children( "h3" ).triggerHandler( "focusout" );
+             
+                        // Refresh accordion to handle new order
+                        //jQuery( this ).accordion( "refresh" );
+                    },
+                    update: function( event, ui ) 
+                    {
+                        // Update hidden fields
+                        var fields_order = jQuery(this).sortable(\'toArray\');
+                        
+                        //$(\'#active_fields_order\').val( fields_order.join("|") );
                     }
                 });
             });
