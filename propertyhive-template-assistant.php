@@ -2173,6 +2173,42 @@ final class PH_Template_Assistant {
             'before' => '<div class="control control-furnished lettings-only">'
         );
 
+        $price_ranges = array(
+            '' => __( 'No preference', 'propertyhive' ),
+            '100000-200000' => '£100,000 - £200,000',
+            '200000-300000' => '£200,000 - £300,000',
+            '300000-400000' => '£300,000 - £400,000',
+            '400000-500000' => '£400,000 - £500,000',
+            '500000-750000' => '£500,000 - £750,000',
+            '750000-1000000' => '£750,000 - £1,000,000',
+        );
+
+        $all_fields['price_range'] = array(
+            'type' => 'select',
+            'label' => __( 'Price', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-price-range sales-only">',
+            'options' => $price_ranges
+        );
+
+        $rent_ranges = array(
+            '' => __( 'No preference', 'propertyhive' ),
+            '100-200' => '£100 - £200 PCM',
+            '200-300' => '£200 - £300 PCM',
+            '300-400' => '£300 - £400 PCM',
+            '400-500' => '£400 - £500 PCM',
+            '500-750' => '£500 - £750 PCM',
+            '750-1000' => '£750 - £1,000 PCM',
+        );
+
+        $all_fields['rent_range'] = array(
+            'type' => 'select',
+            'label' => __( 'Rent', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-rent-range lettings-only">',
+            'options' => $rent_ranges
+        );
+
         $bedrooms = array(
             '' => __( 'No preference', 'propertyhive' ),
             '1' => '1',
