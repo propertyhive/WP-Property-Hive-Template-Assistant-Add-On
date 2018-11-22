@@ -3,9 +3,9 @@ Contributors: PropertyHive,BIOSTALL
 Tags: property hive, propertyhive
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=N68UHATHAEDLN&lc=GB&item_name=BIOSTALL&no_note=0&cn=Add%20special%20instructions%20to%20the%20seller%3a&no_shipping=1&currency_code=GBP&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Requires at least: 3.8
-Tested up to: 4.9.6
+Tested up to: 4.9.8
 Stable tag: trunk
-Version: 1.0.17
+Version: 1.0.18
 Homepage: http://wp-property-hive.com/addons/template-assistant/
 
 This add on for Property Hive assists with the layout of property pages and more.
@@ -27,6 +27,16 @@ Once installed and activated, you can access the settings for this add on by nav
 Updating should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 1.0.18 =
+* Added new settings area relating to flags, including whether they are enabled, colours etc
+* Added new setting to change the default sort order of properties on search results
+* Added new 'Text Substitution' area for changing labels/words
+* Added ability to choose and reorder fields shown on search results
+* Added ability to reorder custom field dropdown options
+* Added price/rent range fields to list of available fields in search forms
+* Added delete confirmations before deleting search forms and custom fields
+* Declare support for WordPress 4.9.8
 
 = 1.0.17 =
 * Added ability to create custom fields of type 'Date'
