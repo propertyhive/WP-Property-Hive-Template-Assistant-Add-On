@@ -62,6 +62,8 @@ final class PH_Template_Assistant {
         add_action( 'admin_init', array( $this, 'check_for_delete_search_form') );
         add_action( 'admin_init', array( $this, 'check_for_delete_custom_field') );
 
+        add_filter( "plugin_action_links_" . plugin_basename( __FILE__ ), array( $this, 'plugin_add_settings_link' ) );
+
         add_action( 'admin_notices', array( $this, 'template_assistant_error_notices') );
         add_action( 'admin_enqueue_scripts', array( $this, 'load_template_assistant_admin_scripts' ) );
 
@@ -97,8 +99,25 @@ final class PH_Template_Assistant {
         add_filter( 'manage_edit-contact_sortable_columns', array( $this, 'custom_fields_in_contact_admin_list_sort' ) );
         add_filter( 'request', array( $this, 'custom_fields_in_contact_admin_list_orderby' ) );
         
-
         $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['search_result_default_order']) && $current_settings['search_result_default_order'] != '' )
+        {
+            add_filter('propertyhive_default_search_results_orderby', array( $this, 'template_assistant_change_default_order'));
+        }
+
+        if ( isset($current_settings['search_result_fields']) && is_array($current_settings['search_result_fields']) && !empty($current_settings['search_result_fields']) )
+        {
+            add_action( 'init', array( $this, 'search_result_field_changes' ) );
+        }
+
+        if ( isset($current_settings['flags_active']) && $current_settings['flags_active'] == '1' )
+        {
+            add_action( 'propertyhive_before_search_results_loop_item_title', array( $this, 'add_flag' ), 15 );
+        }
+
+        add_filter( 'gettext', array( $this, 'template_assistant_text_translation'), 20, 3 );
+
         if ( isset($current_settings['search_forms']) && !empty($current_settings['search_forms']) )
         {
             foreach ( $current_settings['search_forms'] as $id => $form )
@@ -296,6 +315,157 @@ final class PH_Template_Assistant {
                     $meta_boxes_done[] = $custom_field['meta_box'];
                 }
             }
+        }
+    }
+
+    public function plugin_add_settings_link( $links )
+    {
+        $settings_link = '<a href="' . admin_url('admin.php?page=ph-settings&tab=template-assistant') . '">' . __( 'Settings' ) . '</a>';
+        array_push( $links, $settings_link );
+        return $links;
+    }
+
+    public function search_result_field_changes()
+    {
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        remove_action( 'propertyhive_after_search_results_loop_item_title', 'propertyhive_template_loop_floor_area', 5 );
+        remove_action( 'propertyhive_after_search_results_loop_item_title', 'propertyhive_template_loop_price', 10 );
+        remove_action( 'propertyhive_after_search_results_loop_item_title', 'propertyhive_template_loop_summary', 20 );
+        remove_action( 'propertyhive_after_search_results_loop_item_title', 'propertyhive_template_loop_actions', 30 );
+
+        if ( !empty($current_settings['search_result_fields']) )
+        {
+            $priority = 5;
+            foreach ( $current_settings['search_result_fields'] as $search_result_field )
+            {
+                if ( substr($search_result_field, 0, 12) == 'custom_field' )
+                {
+                    // custom field output here
+                    $custom_field = substr($search_result_field, 12);
+
+                    add_action( 'propertyhive_after_search_results_loop_item_title', array($this, 'propertyhive_template_loop_custom_field'), $priority );
+
+                    $priority += 5;
+                    continue;
+                }
+
+                switch ( $search_result_field )
+                {
+                    case "price":
+                    case "floor_area":
+                    case "summary":
+                    case "actions": 
+                    {
+                        add_action( 'propertyhive_after_search_results_loop_item_title', 'propertyhive_template_loop_' . $search_result_field, $priority );
+                        break;
+                    }
+                    case "availability":
+                    {
+                        add_action( 'propertyhive_after_search_results_loop_item_title', function() { global $property; echo '<div class="availability">' . $property->availability . '</div>'; }, $priority );
+                        break;
+                    }
+                    case "property_type":
+                    {
+                        add_action( 'propertyhive_after_search_results_loop_item_title', function() { global $property; echo '<div class="property-type">' . $property->property_type . '</div>'; }, $priority );
+                        break;
+                    }
+                    case "available_date":
+                    {
+                        add_action( 'propertyhive_after_search_results_loop_item_title', function() { global $property; if ( $property->department == 'residential-lettings' && $property->get_available_date() != '' ) { echo '<div class="available-date">' . $property->get_available_date() . '</div>'; } }, $priority );
+                        break;
+                    }
+                    case "rooms":
+                    {
+                        add_action( 'propertyhive_after_search_results_loop_item_title', function() { 
+                            global $property; 
+
+                            if ( ($property->bedrooms != '' && $property->bedrooms != '0') || ($property->bathrooms != '' && $property->bathrooms != '0') || ($property->reception_rooms != '' && $property->reception_rooms != '0') )
+                            {
+                                echo '<div class="rooms">';
+                                if ( $property->bedrooms != '' && $property->bedrooms != '0' ) { echo '<div class="room room-bedrooms"><span class="room-count">' . $property->bedrooms . '</span> <span class="room-label">Bedroom' . ( $property->bedrooms != 1 ? 's' : '' ) . '</span></div>'; }
+                                if ( $property->bathrooms != '' && $property->bathrooms != '0' ) { echo '<div class="room room-bathrooms"><span class="room-count">' . $property->bathrooms . '</span> <span class="room-label">Bathroom' . ( $property->bathrooms != 1 ? 's' : '' ) . '</span></div>'; }
+                                if ( $property->reception_rooms != '' && $property->reception_rooms != '0' ) { echo '<div class="room room-receptions"><span class="room-count">' . $property->reception_rooms . '</span> <span class="room-label">Reception' . ( $property->reception_rooms != 1 ? 's' : '' ) . '</span></div>'; }
+                                echo '</div>'; 
+                            }
+                        }, $priority );
+                        break;
+                    }
+                    default:
+                    {
+                        echo 'unknown search result field requested';
+                    }
+                }
+
+                $priority += 5;
+            }
+        }
+    }
+
+    public function propertyhive_template_loop_custom_field()
+    {
+        global $property; 
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        foreach ( $current_settings['search_result_fields'] as $search_result_field )
+        {
+            if ( substr($search_result_field, 0, 12) == 'custom_field' )
+            {
+                // custom field output here
+                $custom_field = substr($search_result_field, 12);
+
+                $value = $property->{$custom_field};
+
+                if ( $value != '' )
+                {
+                    echo '<div class="custom-field custom-field-' . sanitize_title(trim($custom_field, "_")) . '">' . $value . '</div>';
+                }
+            }
+        }
+    }
+
+    public function template_assistant_change_default_order()
+    {
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        return $current_settings['search_result_default_order'];
+    }
+
+    public function template_assistant_text_translation( $translated_text, $text, $domain )
+    {
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['text_translations']) && is_array($current_settings['text_translations']) && !empty($current_settings['text_translations']) )
+        {
+            foreach ( $current_settings['text_translations'] as $text_translation )
+            {
+                if ( $text_translation['search'] == $translated_text )
+                {
+                    $translated_text = $text_translation['replace'];
+                }
+            }
+        }
+
+        return $translated_text;
+    }
+
+    public function add_flag()
+    {
+        global $property;
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        $flag = $property->availability;
+
+        if ( $property->marketing_flag != '' )
+        {
+            $flag = $property->marketing_flag;
+        }
+
+        if ( $flag != '' )
+        {
+            echo '<div class="flag flag-' . sanitize_title($flag) . '" style="position:absolute; text-transform:uppercase; font-size:13px; box-sizing:border-box; padding:7px 20px; ' . $current_settings['flag_position'] . '; color:' . $current_settings['flag_text_color'] . '; background:' . $current_settings['flag_bg_color'] . ';">' . $flag . '</div>';
         }
     }
 
@@ -721,8 +891,10 @@ final class PH_Template_Assistant {
 
         $sections = array(
             ''         => __( 'Search Results', 'propertyhive' ),
+            'flags'         => __( 'Flags', 'propertyhive' ),
             'search-forms'         => __( 'Search Forms', 'propertyhive' ),
             'custom-fields'        => __( 'Custom Fields', 'propertyhive' ),
+            'text-translation'         => __( 'Text Substitution', 'propertyhive' ),
         );
 
         if ( empty( $sections ) )
@@ -940,12 +1112,14 @@ final class PH_Template_Assistant {
         {
             switch ($current_section)
             {
+                case "flags": { $settings = $this->get_template_assistant_flags_settings(); break; }
                 case "search-forms": { $hide_save_button = true; $settings = $this->get_template_assistant_search_forms_settings(); break; }
                 case "addsearchform": { $settings = $this->get_template_assistant_search_form_settings(); break; }
                 case "editsearchform": { $settings = $this->get_template_assistant_search_form_settings(); break; }
                 case "custom-fields": { $hide_save_button = true; $settings = $this->get_template_assistant_custom_fields_settings(); break; }
                 case "addcustomfield": { $settings = $this->get_template_assistant_custom_field_settings(); break; }
                 case "editcustomfield": { $settings = $this->get_template_assistant_custom_field_settings(); break; }
+                case "text-translation": { $settings = $this->get_template_assistant_text_translation_settings(); break; }
                 default: { die("Unknown setting section"); }
             }
         }
@@ -973,6 +1147,20 @@ final class PH_Template_Assistant {
         {
             switch ($current_section)
             {
+                case "flags": 
+                {
+                    $propertyhive_template_assistant = array(
+                        'flags_active' => ( ( isset($_POST['flags_active']) ) ? $_POST['flags_active'] : '' ),
+                        'flag_position' => $_POST['flag_position'],
+                        'flag_bg_color' => $_POST['flag_bg_color'],
+                        'flag_text_color' => $_POST['flag_text_color'],
+                    );
+
+                    $propertyhive_template_assistant = array_merge($current_settings, $propertyhive_template_assistant);
+
+                    update_option( 'propertyhive_template_assistant', $propertyhive_template_assistant );
+                    break; 
+                }
                 case "search-forms": 
                 {
                     // Nothing to do
@@ -1119,7 +1307,7 @@ final class PH_Template_Assistant {
                         die("Trying to edit a non-existant custom field. Please go back and try again");
                     }
 
-                    $field_name = trim( ( ( isset($_POST['field_name']) ) ? $_POST['field_name'] : '' ) );
+                    $field_name = trim( ( ( isset($_POST['field_name']) ) ? sanitize_title( $_POST['field_name'] ) : '' ) );
 
                     if ( $field_name == '' )
                     {
@@ -1161,14 +1349,66 @@ final class PH_Template_Assistant {
 
                     break; 
                 }
+                case "text-translation": 
+                {
+                    $text_translations = array();
+                    if ( isset($_POST['search']) && is_array($_POST['search']) && !empty($_POST['search']) && isset($_POST['replace']) && is_array($_POST['replace']) && !empty($_POST['replace']) )
+                    {
+                        foreach ( $_POST['search'] as $i => $search )
+                        {
+                            if ( trim($search) != '' && trim($_POST['replace'][$i]) != '' )
+                            {
+                                $text_translations[] = array(
+                                    'search' => $search,
+                                    'replace' => $_POST['replace'][$i],
+                                );
+                            }
+                        }
+                    }
+
+                    $propertyhive_template_assistant = array(
+                        'text_translations' => $text_translations,
+                    );
+
+                    $propertyhive_template_assistant = array_merge($current_settings, $propertyhive_template_assistant);
+
+                    update_option( 'propertyhive_template_assistant', $propertyhive_template_assistant );
+                    break; 
+                }
                 default: { die("Unknown setting section"); }
             }
         }
         else
         {
+            $search_results_fields = array();
+            if ( isset($_POST['search_result_fields']) && is_array($_POST['search_result_fields']) )
+            {
+                $search_results_fields = $_POST['search_result_fields'];
+
+                $new_search_results_fields = array();
+                foreach ( $search_results_fields as $search_results_field )
+                {
+                    if ( $search_results_field == 'custom_field' )
+                    {  
+                        if ( isset($_POST['search_result_fields_custom_field']) && $_POST['search_result_fields_custom_field'] != '' )
+                        {
+                            $new_search_results_fields[] = $_POST['search_result_fields_custom_field'];
+                        }
+                    }
+                    else
+                    {
+                        $new_search_results_fields[] = $search_results_field;
+                    }
+                }
+
+                $search_results_fields = $new_search_results_fields;
+            }
+
             $propertyhive_template_assistant = array(
+                'search_result_default_order' => $_POST['search_result_default_order'],
                 'search_result_columns' => $_POST['search_result_columns'],
                 'search_result_layout' => $_POST['search_result_layout'],
+                'search_result_fields' => $search_results_fields,
                 'search_result_css' => trim($_POST['search_result_css']),
             );
 
@@ -1194,6 +1434,18 @@ final class PH_Template_Assistant {
         );
 
         $settings[] = array(
+            'title' => __( 'Default Sort Order', 'propertyhive' ),
+            'id'        => 'search_result_default_order',
+            'type'      => 'select',
+            'default'   => ( isset($current_settings['search_result_default_order']) ? $current_settings['search_result_default_order'] : ''),
+            'options'   => array(
+                '' => 'Price Descending (' . __( 'default', 'propertyhive') . ')',
+                'price-asc' => 'Price Ascending',
+                'date' => 'Date Added',
+            )
+        );
+
+        $settings[] = array(
             'title' => __( 'Properties Per Row', 'propertyhive' ),
             'id'        => 'search_result_columns',
             'type'      => 'select',
@@ -1215,6 +1467,131 @@ final class PH_Template_Assistant {
                 '1' => 'List Layout 1 (default)',
                 '2' => 'List Layout 2 (card)',
             )
+        );
+
+        $search_result_fields = array( 'price', 'floor_area', 'summary', 'actions' );
+        if ( isset($current_settings['search_result_fields']) && is_array($current_settings['search_result_fields']) )
+        {
+            if ( !empty($current_settings['search_result_fields']) )
+            {
+                $search_result_fields = $current_settings['search_result_fields'];
+            }
+            else
+            {
+                $search_result_fields = array();
+            }
+        }
+
+        $fields = array(
+            array( 'id' => 'price', 'label' => 'Price / Rent' ),
+            array( 'id' => 'floor_area', 'label' => 'Floor Area (commercial only)' ),
+            array( 'id' => 'summary', 'label' => 'Summary Description' ),
+            array( 'id' => 'actions', 'label' => 'Actions (i.e. More Details Button)' ),
+            array( 'id' => 'rooms', 'label' => 'Rooms Counts' ),
+            array( 'id' => 'availability', 'label' => 'Availability' ),
+            array( 'id' => 'property_type', 'label' => 'Property Type' ),
+            array( 'id' => 'available_date', 'label' => 'Available Date (lettings only)' ),
+        );
+        $custom_field_selected = false;
+        if ( isset($current_settings['custom_fields']) && is_array($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            $label = '<select name="search_result_fields_custom_field"><option value="">Custom Field...</option>';
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                $label .= '<option value="custom_field' . $custom_field['field_name'] . '"';
+                if ( in_array('custom_field' . $custom_field['field_name'], $search_result_fields) )
+                {
+                    $label .= ' selected';
+                    $custom_field_selected = true;
+                }
+                $label .= '>' . $custom_field['field_label'] . '</option>';
+            }
+            $label .= '</select>';
+
+            $fields[] = array( 'id' => 'custom_field', 'label' => $label );
+        }
+
+        // Need to sort order to match what's saved
+        foreach ( $search_result_fields as $j => $search_result_field )
+        {
+            foreach ( $fields as $i => $field )
+            {
+                if ( $field['id'] == $search_result_field || ( $field['id'] == 'custom_field' && substr($search_result_field, 0, 12) == 'custom_field' ) )
+                {
+                    $fields[$i]['order'] = $j;
+                }
+            }
+        }
+        foreach ( $fields as $i => $field )
+        {
+            if ( !isset($field['order']) )
+            {
+                $fields[$i]['order'] = $i + 99;
+            }
+        }
+
+        // order $fields by 'order' key
+        $sorter = array();
+        $ret = array();
+        reset($fields);
+        foreach ($fields as $ii => $va) 
+        {
+            $sorter[$ii] = $va['order'];
+        }
+        asort($sorter);
+        foreach ($sorter as $ii => $va) 
+        {
+            $ret[$ii] = $fields[$ii];
+        }
+        $fields = $ret;
+
+        $html = '<span class="form-field-options" id="sortable_options">';
+        foreach ( $fields as $field )
+        {
+            $html .= '<span style="display:block; padding:3px 0;">
+                <i class="fa fa-reorder" style="cursor:pointer; opacity:0.3"></i> &nbsp;
+                <input type="checkbox" name="search_result_fields[]" value="' . $field['id'] . '"';
+            if ( in_array($field['id'], $search_result_fields) || ( $field['id'] == 'custom_field' && $custom_field_selected ) )
+            {
+                $html .= ' checked';
+            }
+            $html .= '>
+                ' . $field['label'] . '
+            </span>';
+        }
+        $html .= '</span>
+
+        <script>
+            jQuery(document).ready(function($)
+            {
+                $( "#sortable_options" )
+                .sortable({
+                    axis: "y",
+                    handle: "i",
+                    stop: function( event, ui ) 
+                    {
+                        // IE doesn\'t register the blur when sorting
+                        // so trigger focusout handlers to remove .ui-state-focus
+                        //ui.item.children( "h3" ).triggerHandler( "focusout" );
+             
+                        // Refresh accordion to handle new order
+                        //$( this ).accordion( "refresh" );
+                    },
+                    update: function( event, ui ) 
+                    {
+                        // Update hidden fields
+                        var fields_order = $(this).sortable(\'toArray\');
+                        
+                        //$(\'#active_fields_order\').val( fields_order.join("|") );
+                    }
+                });
+            });
+        </script>';
+
+        $settings[] = array(
+            'title' => __( 'Fields Shown', 'propertyhive' ),
+            'type'      => 'html',
+            'html'      => $html
         );
 
         $columns_1_css = file_get_contents(dirname(PH_TEMPLATE_ASSISTANT_PLUGIN_FILE) . '/assets/css/columns-1.css');
@@ -1311,6 +1688,123 @@ final class PH_Template_Assistant {
         );
 
         $settings[] = array( 'type' => 'sectionend', 'id' => 'template_assistant_search_results_settings');
+
+        return $settings;
+    }
+
+    /**
+     * Get template assistant flag settings
+     *
+     * @return array Array of settings
+     */
+    public function get_template_assistant_flags_settings() {
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        $settings = array(
+
+            array( 'title' => __( 'Flags', 'propertyhive' ), 'type' => 'title', 'desc' => '', 'id' => 'template_assistant_flags_settings' )
+
+        );
+
+        $settings[] = array(
+            'title' => __( 'Show Flags', 'propertyhive' ),
+            'id'        => 'flags_active',
+            'type'      => 'checkbox',
+            'default'   => ( ( isset($current_settings['flags_active']) && $current_settings['flags_active'] == '1' ) ? 'yes' : ''),
+            'desc'      => 'If checked flags will be shown in search results over the property thumbnail containing the property availability or marketing flag if one selected'
+        );
+
+        $settings[] = array(
+            'title' => __( 'Position Over Thumbnail', 'propertyhive' ),
+            'id'        => 'flag_position',
+            'type'      => 'select',
+            'default'   => ( isset($current_settings['flag_position']) ? $current_settings['flag_position'] : ''),
+            'options'   => array(
+                'top:0; left:0;' => 'Top Left',
+                'top:0; right:0;' => 'Top Right',
+                'bottom:0; left:0;' => 'Bottom Left',
+                'bottom:0; right:0;' => 'Bottom Right',
+                'top:0; left:0; right:0;' => 'Across Top',
+                'bottom:0; left:0; right:0;' => 'Across Bottom',
+            )
+        );
+
+        $settings[] = array(
+            'title' => __( 'Background Colour', 'propertyhive' ),
+            'id'        => 'flag_bg_color',
+            'type'      => 'color',
+            'default'   => ( isset($current_settings['flag_bg_color']) ? $current_settings['flag_bg_color'] : '#000'),
+        );
+
+        $settings[] = array(
+            'title' => __( 'Text Colour', 'propertyhive' ),
+            'id'        => 'flag_text_color',
+            'type'      => 'color',
+            'default'   => ( isset($current_settings['flag_text_color']) ? $current_settings['flag_text_color'] : '#FFF'),
+        );
+
+        $settings[] = array( 'type' => 'sectionend', 'id' => 'template_assistant_flags_settings');
+
+        return $settings;
+    }
+
+    /**
+     * Get template assistant text translation settings
+     *
+     * @return array Array of settings
+     */
+    public function get_template_assistant_text_translation_settings() {
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        $settings = array(
+
+            array( 'title' => __( 'Text Substitution', 'propertyhive' ), 'type' => 'title', 'desc' => '', 'id' => 'template_assistant_text_translation_settings' )
+
+        );
+
+        /*$settings[] = array(
+            'title' => __( 'Show Flags', 'propertyhive' ),
+            'id'        => 'flags_active',
+            'type'      => 'checkbox',
+            'default'   => ( ( isset($current_settings['flags_active']) && $current_settings['flags_active'] == '1' ) ? 'yes' : ''),
+            'desc'      => 'If checked flags will be shown in search results over the property thumbnail containing the property availability or marketing flag if one selected'
+        );*/
+
+        $existing_translations = array();
+        if ( isset($current_settings['text_translations']) && is_array($current_settings['text_translations']) && !empty($current_settings['text_translations']) )
+        {
+            foreach ( $current_settings['text_translations'] as $text_translation )
+            {
+                $existing_translations[] = '<tr><td><input type="text" name="search[]" value="' . $text_translation['search'] . '"></td><td><input type="text" name="replace[]" value="' . $text_translation['replace'] . '"></td></tr>';
+            }
+        }
+
+        $settings[] = array(
+            'type'      => 'html',
+            'html'      => '
+
+            <style type="text/css">.form-table .titledesc { display:none; }</style>
+
+            <table cellpadding="0" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th width="200">Text To Replace</th>
+                        <th width="200">Replace With</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ' . implode("", $existing_translations) . '
+                    <tr>
+                        <td><input type="text" name="search[]" placeholder="e.g. Make Enquiry"></td>
+                        <td><input type="text" name="replace[]" placeholder="e.g. Request Viewing"></td>
+                    </tr>
+                </tbody>
+            </table>'
+        );
+
+        $settings[] = array( 'type' => 'sectionend', 'id' => 'template_assistant_text_translation_settings');
 
         return $settings;
     }
@@ -1453,7 +1947,7 @@ final class PH_Template_Assistant {
                                         echo '<td class="settings">
                                             <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=editsearchform&id=' . $id ) . '">' . __( 'Edit Fields', 'propertyhive' ) . '</a>
                                             <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=search-forms&action=resetsearchform&id=' . $id ) . '">' . __( 'Reset To Default Fields', 'propertyhive' ) . '</a>
-                                            ' .  ( ( $id != 'default' ) ? '<a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=search-forms&action=deletesearchform&id=' . $id ) . '">' . __( 'Delete', 'propertyhive' ) . '</a>' : '' ) . '
+                                            ' .  ( ( $id != 'default' ) ? '<a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=search-forms&action=deletesearchform&id=' . $id ) . '" onclick="var confirmBox = confirm(\'Are you sure you wish to delete this search form?\'); return confirmBox;">' . __( 'Delete', 'propertyhive' ) . '</a>' : '' ) . '
                                         </td>';
                                     echo '</tr>';
                                 }
@@ -1686,6 +2180,42 @@ final class PH_Template_Assistant {
             'label' => __( 'Furnished', 'propertyhive' ),
             'show_label' => true,
             'before' => '<div class="control control-furnished lettings-only">'
+        );
+
+        $price_ranges = array(
+            '' => __( 'No preference', 'propertyhive' ),
+            '100000-200000' => '£100,000 - £200,000',
+            '200000-300000' => '£200,000 - £300,000',
+            '300000-400000' => '£300,000 - £400,000',
+            '400000-500000' => '£400,000 - £500,000',
+            '500000-750000' => '£500,000 - £750,000',
+            '750000-1000000' => '£750,000 - £1,000,000',
+        );
+
+        $all_fields['price_range'] = array(
+            'type' => 'select',
+            'label' => __( 'Price', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-price-range sales-only">',
+            'options' => $price_ranges
+        );
+
+        $rent_ranges = array(
+            '' => __( 'No preference', 'propertyhive' ),
+            '100-200' => '£100 - £200 PCM',
+            '200-300' => '£200 - £300 PCM',
+            '300-400' => '£300 - £400 PCM',
+            '400-500' => '£400 - £500 PCM',
+            '500-750' => '£500 - £750 PCM',
+            '750-1000' => '£750 - £1,000 PCM',
+        );
+
+        $all_fields['rent_range'] = array(
+            'type' => 'select',
+            'label' => __( 'Rent', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-rent-range lettings-only">',
+            'options' => $rent_ranges
         );
 
         $bedrooms = array(
@@ -2033,7 +2563,7 @@ final class PH_Template_Assistant {
                                         echo '</td>';
                                         echo '<td class="settings">
                                             <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=editcustomfield&id=' . $id ) . '">' . __( 'Edit Field', 'propertyhive' ) . '</a>
-                                            <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=custom-fields&action=deletecustomfield&id=' . $id ) . '">' . __( 'Delete', 'propertyhive' ) . '</a>
+                                            <a class="button" href="' . admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=custom-fields&action=deletecustomfield&id=' . $id ) . '" onclick="var confirmBox = confirm(\'Are you sure you wish to delete this custom field?\'); return confirmBox;">' . __( 'Delete', 'propertyhive' ) . '</a>
                                         </td>';
                                     echo '</tr>';
                                 }
@@ -2220,13 +2750,13 @@ final class PH_Template_Assistant {
             <th scope="row" class="titledesc">
                 <label for="field_type">Dropdown Options</label>
             </th>
-            <td class="forminp forminp-dropdown-options"><div>';
+            <td class="forminp forminp-dropdown-options"><div id="sortable_options_' . $current_id . '">';
         if ( isset($custom_field_details['dropdown_options']) && !empty($custom_field_details['dropdown_options']) )
         {
             foreach ( $custom_field_details['dropdown_options'] as $dropdown_option )
             {
                 echo '
-                    <div><input type="text" name="dropdown_options[]" value="' . $dropdown_option . '"> <a href="" class="delete-dropdown-option">Delete Option</a></div>
+                    <div><i class="fa fa-reorder" style="cursor:pointer; opacity:0.3"></i> <input type="text" name="dropdown_options[]" value="' . $dropdown_option . '"> <a href="" class="delete-dropdown-option">Delete Option</a></div>
                 ';
             }
         }
@@ -2234,7 +2764,7 @@ final class PH_Template_Assistant {
         {
             // None exist
             echo '
-                <div><input type="text" name="dropdown_options[]" placeholder="Add Option"> <a href="" class="delete-dropdown-option">Delete Option</a></div>
+                <div><i class="fa fa-reorder" style="cursor:pointer; opacity:0.3"></i> <input type="text" name="dropdown_options[]" placeholder="Add Option"> <a href="" class="delete-dropdown-option">Delete Option</a></div>
             ';
         }
         echo '
@@ -2257,7 +2787,7 @@ final class PH_Template_Assistant {
                 {
                     e.preventDefault();
 
-                    jQuery(\'.forminp-dropdown-options > div\').append(\'<div><input type="text" name="dropdown_options[]" placeholder="Add Option"> <a href="" class="delete-dropdown-option">Delete Option</a></div>\');
+                    jQuery(\'.forminp-dropdown-options > div\').append(\'<div><i class="fa fa-reorder" style="cursor:pointer; opacity:0.3"></i> <input type="text" name="dropdown_options[]" placeholder="Add Option"> <a href="" class="delete-dropdown-option">Delete Option</a></div>\');
                 });
 
                 jQuery(\'body\').on(\'click\', \'a.delete-dropdown-option\', function(e)
@@ -2269,6 +2799,28 @@ final class PH_Template_Assistant {
                     if ( confirmBox )
                     {
                         jQuery(this).parent().remove();
+                    }
+                });
+
+                jQuery( \'#sortable_options_' . $current_id . '\' )
+                .sortable({
+                    axis: "y",
+                    handle: "i",
+                    stop: function( event, ui ) 
+                    {
+                        // IE doesn\'t register the blur when sorting
+                        // so trigger focusout handlers to remove .ui-state-focus
+                        //ui.item.children( "h3" ).triggerHandler( "focusout" );
+             
+                        // Refresh accordion to handle new order
+                        //jQuery( this ).accordion( "refresh" );
+                    },
+                    update: function( event, ui ) 
+                    {
+                        // Update hidden fields
+                        var fields_order = jQuery(this).sortable(\'toArray\');
+                        
+                        //$(\'#active_fields_order\').val( fields_order.join("|") );
                     }
                 });
             });
