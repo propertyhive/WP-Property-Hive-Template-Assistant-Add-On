@@ -62,6 +62,8 @@ final class PH_Template_Assistant {
         add_action( 'admin_init', array( $this, 'check_for_delete_search_form') );
         add_action( 'admin_init', array( $this, 'check_for_delete_custom_field') );
 
+        add_filter( "plugin_action_links_" . plugin_basename( __FILE__ ), array( $this, 'plugin_add_settings_link' ) );
+
         add_action( 'admin_notices', array( $this, 'template_assistant_error_notices') );
         add_action( 'admin_enqueue_scripts', array( $this, 'load_template_assistant_admin_scripts' ) );
 
@@ -314,6 +316,13 @@ final class PH_Template_Assistant {
                 }
             }
         }
+    }
+
+    public function plugin_add_settings_link( $links )
+    {
+        $settings_link = '<a href="' . admin_url('admin.php?page=ph-settings&tab=template-assistant') . '">' . __( 'Settings' ) . '</a>';
+        array_push( $links, $settings_link );
+        return $links;
     }
 
     public function search_result_field_changes()
