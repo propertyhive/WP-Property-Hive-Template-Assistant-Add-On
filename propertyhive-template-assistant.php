@@ -2124,12 +2124,12 @@ final class PH_Template_Assistant {
                 'show_label' => true,
                 'before' => '<div class="control control-radius">',
                 'options' => array(
-                    '' => 'This Area Only',
-                    '1' => 'Within 1 Mile',
-                    '2' => 'Within 2 Miles',
-                    '3' => 'Within 3 Miles',
-                    '5' => 'Within 5 Miles',
-                    '10' => 'Within 10 Miles'
+                    '' => __( 'This Area Only', 'propertyhive' ),
+                    '1' => __( 'Within 1 Mile', 'propertyhive' ),
+                    '2' => __( 'Within 2 Miles', 'propertyhive' ),
+                    '3' => __( 'Within 3 Miles', 'propertyhive' ),
+                    '5' => __( 'Within 5 Miles', 'propertyhive' ),
+                    '10' => __( 'Within 10 Miles', 'propertyhive' ),
                 )
             );
         }
