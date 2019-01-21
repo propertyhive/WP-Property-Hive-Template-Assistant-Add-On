@@ -2167,7 +2167,24 @@ final class PH_Template_Assistant {
             'type' => 'tenure',
             'label' => __( 'Tenure', 'propertyhive' ),
             'show_label' => true,
-            'before' => '<div class="control control-tenure">'
+            'before' => '<div class="control control-tenure residential-only">'
+        );
+        $all_fields['commercial_tenure'] = array(
+            'type' => 'commercial_tenure',
+            'label' => __( 'Commercial Tenure', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-commercial_tenure commercial-only">'
+        );
+        $all_fields['commercial_for_sale_to_rent'] = array(
+            'type' => 'select',
+            'label' => __( 'For Sale / To Rent', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-commercial_for_sale_to_rent commercial-only">',
+            'options' => array(
+                '' => __( 'No Preference', 'propertyhive' ),
+                'for_sale' => __( 'For Sale', 'propertyhive' ),
+                'to_rent' => __( 'To Rent', 'propertyhive' ),
+            )
         );
         $all_fields['sale_by'] = array(
             'type' => 'sale_by',
