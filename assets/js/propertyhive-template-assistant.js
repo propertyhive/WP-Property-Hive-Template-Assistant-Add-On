@@ -8,6 +8,11 @@ jQuery(document).ready(function()
 	ph_template_assistant_set_image_heights();
 });
 
+jQuery(window).load(function()
+{
+	ph_template_assistant_set_image_heights();
+});
+
 function ph_template_assistant_set_image_heights()
 {
 	jQuery('.propertyhive ul.properties li').height('auto');
