@@ -49,6 +49,10 @@ final class PH_Template_Assistant {
         $this->id    = 'template-assistant';
         $this->label = __( 'Template Assistant', 'propertyhive' );
 
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        $this->settings = $current_settings;
+
         // Define constants
         $this->define_constants();
 
@@ -99,8 +103,6 @@ final class PH_Template_Assistant {
         add_filter( 'manage_edit-contact_sortable_columns', array( $this, 'custom_fields_in_contact_admin_list_sort' ) );
         add_filter( 'request', array( $this, 'custom_fields_in_contact_admin_list_orderby' ) );
         
-        $current_settings = get_option( 'propertyhive_template_assistant', array() );
-
         if ( isset($current_settings['search_result_default_order']) && $current_settings['search_result_default_order'] != '' )
         {
             add_filter('propertyhive_default_search_results_orderby', array( $this, 'template_assistant_change_default_order'));
@@ -116,7 +118,10 @@ final class PH_Template_Assistant {
             add_action( 'propertyhive_before_search_results_loop_item_title', array( $this, 'add_flag' ), 15 );
         }
 
-        add_filter( 'gettext', array( $this, 'template_assistant_text_translation'), 20, 3 );
+        if ( isset($current_settings['text_translations']) && is_array($current_settings['text_translations']) && !empty($current_settings['text_translations']) )
+        {
+            add_filter( 'gettext', array( $this, 'template_assistant_text_translation'), 20, 3 );
+        }
 
         if ( isset($current_settings['search_forms']) && !empty($current_settings['search_forms']) )
         {
@@ -434,16 +439,11 @@ final class PH_Template_Assistant {
 
     public function template_assistant_text_translation( $translated_text, $text, $domain )
     {
-        $current_settings = get_option( 'propertyhive_template_assistant', array() );
-
-        if ( isset($current_settings['text_translations']) && is_array($current_settings['text_translations']) && !empty($current_settings['text_translations']) )
+        foreach ( $this->settings['text_translations'] as $text_translation )
         {
-            foreach ( $current_settings['text_translations'] as $text_translation )
+            if ( $text_translation['search'] == $translated_text )
             {
-                if ( $text_translation['search'] == $translated_text )
-                {
-                    $translated_text = $text_translation['replace'];
-                }
+                $translated_text = $text_translation['replace'];
             }
         }
 
