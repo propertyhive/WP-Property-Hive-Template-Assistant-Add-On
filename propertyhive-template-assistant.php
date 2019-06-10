@@ -117,6 +117,10 @@ final class PH_Template_Assistant {
         {
             add_action( 'propertyhive_before_search_results_loop_item_title', array( $this, 'add_flag' ), 15 );
         }
+        if ( isset($current_settings['flags_active_single']) && $current_settings['flags_active_single'] == '1' )
+        {
+            add_action( 'propertyhive_before_single_property_images', array( $this, 'add_flag_single' ), 5 );
+        }
 
         if ( isset($current_settings['text_translations']) && is_array($current_settings['text_translations']) && !empty($current_settings['text_translations']) )
         {
@@ -450,11 +454,9 @@ final class PH_Template_Assistant {
         return $translated_text;
     }
 
-    public function add_flag()
+    private function get_flag()
     {
         global $property;
-
-        $current_settings = get_option( 'propertyhive_template_assistant', array() );
 
         $flag = $property->availability;
 
@@ -463,9 +465,36 @@ final class PH_Template_Assistant {
             $flag = $property->marketing_flag;
         }
 
+        $flag = apply_filters( 'propertyhive_template_assistant_flag', $flag );
+
+        return $flag;
+    }
+
+    public function add_flag()
+    {
+        global $property;
+
+        $flag = $this->get_flag();
+
         if ( $flag != '' )
         {
+            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
             echo '<div class="flag flag-' . sanitize_title($flag) . '" style="position:absolute; text-transform:uppercase; font-size:13px; box-sizing:border-box; padding:7px 20px; ' . $current_settings['flag_position'] . '; color:' . $current_settings['flag_text_color'] . '; background:' . $current_settings['flag_bg_color'] . ';">' . $flag . '</div>';
+        }
+    }
+
+    public function add_flag_single()
+    {
+        global $property;
+
+        $flag = $this->get_flag();
+
+        if ( $flag != '' )
+        {
+            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+            echo '<div class="flag flag-' . sanitize_title($flag) . '" style="position:absolute; z-index:99; text-transform:uppercase; font-size:13px; box-sizing:border-box; padding:7px 20px; ' . $current_settings['flag_position'] . '; color:' . $current_settings['flag_text_color'] . '; background:' . $current_settings['flag_bg_color'] . ';">' . $flag . '</div>';
         }
     }
 
@@ -1151,6 +1180,7 @@ final class PH_Template_Assistant {
                 {
                     $propertyhive_template_assistant = array(
                         'flags_active' => ( ( isset($_POST['flags_active']) ) ? $_POST['flags_active'] : '' ),
+                        'flags_active_single' => ( ( isset($_POST['flags_active_single']) ) ? $_POST['flags_active_single'] : '' ),
                         'flag_position' => $_POST['flag_position'],
                         'flag_bg_color' => $_POST['flag_bg_color'],
                         'flag_text_color' => $_POST['flag_text_color'],
@@ -1708,11 +1738,19 @@ final class PH_Template_Assistant {
         );
 
         $settings[] = array(
-            'title' => __( 'Show Flags', 'propertyhive' ),
+            'title' => __( 'Show Flags On Search Results', 'propertyhive' ),
             'id'        => 'flags_active',
             'type'      => 'checkbox',
             'default'   => ( ( isset($current_settings['flags_active']) && $current_settings['flags_active'] == '1' ) ? 'yes' : ''),
             'desc'      => 'If checked flags will be shown in search results over the property thumbnail containing the property availability or marketing flag if one selected'
+        );
+
+        $settings[] = array(
+            'title' => __( 'Show Flags On Property Details', 'propertyhive' ),
+            'id'        => 'flags_active_single',
+            'type'      => 'checkbox',
+            'default'   => ( ( isset($current_settings['flags_active_single']) && $current_settings['flags_active_single'] == '1' ) ? 'yes' : ''),
+            'desc'      => 'If checked flags will be shown over the main image slideshow on the full property details page'
         );
 
         $settings[] = array(
