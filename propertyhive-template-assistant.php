@@ -732,30 +732,21 @@ final class PH_Template_Assistant {
                 {
                     // We have a department field in this form. Check options match current department settings
 
-                    if ( $sales_active != 'yes' && isset($form['active_fields']['department']['options']['residential-sales']) )
-                    {
-                        unset($form['active_fields']['department']['options']['residential-sales']);
-                    }
-                    if ( $lettings_active != 'yes' && isset($form['active_fields']['department']['options']['residential-lettings']) )
-                    {
-                        unset($form['active_fields']['department']['options']['residential-lettings']);
-                    }
-                    if ( $commercial_active != 'yes' && isset($form['active_fields']['department']['options']['commercial']) )
-                    {
-                        unset($form['active_fields']['department']['options']['commercial']);
-                    }
+                    $departments = ph_get_departments();
 
-                    if ( $sales_active == 'yes' && !isset($form['active_fields']['department']['options']['residential-sales']) )
+                    foreach ( $departments as $key => $value )
                     {
-                        $form['active_fields']['department']['options']['residential-sales'] = 'Residential Sales';
-                    }
-                    if ( $lettings_active == 'yes' && !isset($form['active_fields']['department']['options']['residential-lettings']) )
-                    {
-                        $form['active_fields']['department']['options']['residential-lettings'] = 'Residential Lettings';
-                    }
-                    if ( $commercial_active == 'yes' && !isset($form['active_fields']['department']['options']['commercial']) )
-                    {
-                        $form['active_fields']['department']['options']['commercial'] = 'Commercial';
+                        $department_active = get_option( 'propertyhive_active_departments_' . str_replace("residential-", "", $key) );
+
+                        if ( $department_active != 'yes' && isset($form['active_fields']['department']['options'][$key]) )
+                        {
+                            unset($form['active_fields']['department']['options'][$key]);
+                        }
+
+                        if ( $department_active == 'yes' && !isset($form['active_fields']['department']['options'][$key]) )
+                        {
+                            $form['active_fields']['department']['options'][$key] = $value;
+                        }
                     }
 
                     $current_settings['search_forms'][$id]['active_fields'] = $form['active_fields'];
