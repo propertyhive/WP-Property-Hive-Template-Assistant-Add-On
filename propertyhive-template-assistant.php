@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Property Hive Template Assistant Add On
  * Plugin Uri: http://wp-property-hive.com/addons/template-assistant/
- * Description: Add On for Property Hive which assists with the layout of property pages, the fields shown on search forms and allows you to manage custom fields on the property record.
+ * Description: Add On for Property Hive which assists with the layout of property pages, the fields shown on search forms and allows you to manage additional fields on the property record.
  * Version: 1.0.22
  * Author: PropertyHive
  * Author URI: http://wp-property-hive.com
@@ -102,6 +102,31 @@ final class PH_Template_Assistant {
         add_action( 'manage_contact_posts_custom_column', array( $this, 'custom_fields_in_contact_admin_list' ), 2 );
         add_filter( 'manage_edit-contact_sortable_columns', array( $this, 'custom_fields_in_contact_admin_list_sort' ) );
         add_filter( 'request', array( $this, 'custom_fields_in_contact_admin_list_orderby' ) );
+
+        add_filter( 'manage_edit-enquiry_columns', array( $this, 'custom_fields_in_enquiry_admin_list_edit' ) );
+        add_action( 'manage_enquiry_posts_custom_column', array( $this, 'custom_fields_in_enquiry_admin_list' ), 2 );
+        add_filter( 'manage_edit-enquiry_sortable_columns', array( $this, 'custom_fields_in_enquiry_admin_list_sort' ) );
+        add_filter( 'request', array( $this, 'custom_fields_in_enquiry_admin_list_orderby' ) );
+
+        add_filter( 'manage_edit-appraisal_columns', array( $this, 'custom_fields_in_appraisal_admin_list_edit' ) );
+        add_action( 'manage_appraisal_posts_custom_column', array( $this, 'custom_fields_in_appraisal_admin_list' ), 2 );
+        add_filter( 'manage_edit-appraisal_sortable_columns', array( $this, 'custom_fields_in_appraisal_admin_list_sort' ) );
+        add_filter( 'request', array( $this, 'custom_fields_in_appraisal_admin_list_orderby' ) );
+
+        add_filter( 'manage_edit-viewing_columns', array( $this, 'custom_fields_in_viewing_admin_list_edit' ) );
+        add_action( 'manage_viewing_posts_custom_column', array( $this, 'custom_fields_in_viewing_admin_list' ), 2 );
+        add_filter( 'manage_edit-viewing_sortable_columns', array( $this, 'custom_fields_in_viewing_admin_list_sort' ) );
+        add_filter( 'request', array( $this, 'custom_fields_in_viewing_admin_list_orderby' ) );
+
+        add_filter( 'manage_edit-offer_columns', array( $this, 'custom_fields_in_offer_admin_list_edit' ) );
+        add_action( 'manage_offer_posts_custom_column', array( $this, 'custom_fields_in_offer_admin_list' ), 2 );
+        add_filter( 'manage_edit-offer_sortable_columns', array( $this, 'custom_fields_in_offer_admin_list_sort' ) );
+        add_filter( 'request', array( $this, 'custom_fields_in_offer_admin_list_orderby' ) );
+
+        add_filter( 'manage_edit-sale_columns', array( $this, 'custom_fields_in_sale_admin_list_edit' ) );
+        add_action( 'manage_sale_posts_custom_column', array( $this, 'custom_fields_in_sale_admin_list' ), 2 );
+        add_filter( 'manage_edit-sale_sortable_columns', array( $this, 'custom_fields_in_sale_admin_list_sort' ) );
+        add_filter( 'request', array( $this, 'custom_fields_in_sale_admin_list_orderby' ) );
         
         if ( isset($current_settings['search_result_default_order']) && $current_settings['search_result_default_order'] != '' )
         {
@@ -176,7 +201,7 @@ final class PH_Template_Assistant {
                     }
                     $fields = $new_ordered_fields;
 
-                    // Check if any of the fields at this point are setup as custom fields
+                    // Check if any of the fields at this point are setup as additional fields
                     $custom_fields = ( ( isset($current_settings['custom_fields']) ) ? $current_settings['custom_fields'] : array() );
 
                     foreach ( $fields as $field_id => $field )
@@ -498,6 +523,7 @@ final class PH_Template_Assistant {
         }
     }
 
+    // Additional fields in property admin list
     public function custom_fields_in_property_admin_list_edit( $existing_columns )
     {
         if ( empty( $existing_columns ) && ! is_array( $existing_columns ) ) {
@@ -607,6 +633,7 @@ final class PH_Template_Assistant {
         return $vars;
     }
 
+    // Additional fields in contact admin list
     public function custom_fields_in_contact_admin_list_edit( $existing_columns )
     {
         if ( empty( $existing_columns ) && ! is_array( $existing_columns ) ) {
@@ -702,7 +729,563 @@ final class PH_Template_Assistant {
                 {
                     if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && isset($custom_field['admin_list_sortable']) && $custom_field['admin_list_sortable'] == '1' && substr($custom_field['meta_box'], 0, 8) == 'contact_' )
                     {
-                        if ( $custom_field['field_name'] == $vars['orderby'] ) {
+                        if ( $custom_field['field_name'] == $vars['orderby'] ) 
+                        {
+                            $vars = array_merge( $vars, array(
+                                'meta_key'  => $custom_field['field_name'],
+                                'orderby'   => 'meta_value'
+                            ) );
+                        }
+                    }
+                }
+            }
+        }
+
+        return $vars;
+    }
+
+    // Additional fields in enquiry admin list
+    public function custom_fields_in_enquiry_admin_list_edit( $existing_columns )
+    {
+        if ( empty( $existing_columns ) && ! is_array( $existing_columns ) ) {
+            $existing_columns = array();
+        }
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && substr($custom_field['meta_box'], 0, 8) == 'enquiry_' )
+                {
+                    $existing_columns[$custom_field['field_name']] = __( $custom_field['field_label'], 'propertyhive' );
+                }
+            }
+        }
+
+        return $existing_columns;
+    }
+
+    public function custom_fields_in_enquiry_admin_list( $column )
+    {
+        global $post, $propertyhive, $the_enquiry;
+
+        if ( empty( $the_enquiry ) || $the_enquiry->ID != $post->ID ) 
+        {
+            $the_enquiry = new PH_Enquiry( $post->ID );
+        }
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && substr($custom_field['meta_box'], 0, 8) == 'enquiry_' && $custom_field['field_name'] == $column )
+                {
+                    if ( $the_enquiry->{$custom_field['field_name']} != '' )
+                    {
+                        if ( $custom_field['field_type'] == 'multiselect' )
+                        {
+                            $values = get_post_meta( $the_enquiry->id, $custom_field['field_name'], TRUE );
+                            if ( !empty($values) )
+                            {
+                                echo implode(", ", $values);
+                            }
+                        }
+                        elseif ( $custom_field['field_type'] == 'date' )
+                        {
+                            echo date(get_option( 'date_format' ), strtotime($the_enquiry->{$custom_field['field_name']}));
+                        }
+                        else
+                        {
+                            echo $the_enquiry->{$custom_field['field_name']};
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public function custom_fields_in_enquiry_admin_list_sort( $columns ) 
+    {
+        $custom = array();
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && isset($custom_field['admin_list_sortable']) && $custom_field['admin_list_sortable'] == '1' && substr($custom_field['meta_box'], 0, 8) == 'enquiry_' )
+                {
+                    $custom[$custom_field['field_name']] = $custom_field['field_name'];
+                }
+            }
+        }
+
+        return wp_parse_args( $custom, $columns );
+    }
+
+    public function custom_fields_in_enquiry_admin_list_orderby( $vars ) 
+    {
+        if ( isset( $vars['orderby'] ) ) 
+        {
+            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+            if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+            {
+                foreach ( $current_settings['custom_fields'] as $custom_field )
+                {
+                    if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && isset($custom_field['admin_list_sortable']) && $custom_field['admin_list_sortable'] == '1' && substr($custom_field['meta_box'], 0, 8) == 'enquiry_' )
+                    {
+                        if ( $custom_field['field_name'] == $vars['orderby'] ) 
+                        {
+                            $vars = array_merge( $vars, array(
+                                'meta_key'  => $custom_field['field_name'],
+                                'orderby'   => 'meta_value'
+                            ) );
+                        }
+                    }
+                }
+            }
+        }
+
+        return $vars;
+    }
+
+    // Additional fields in appraisal admin list
+    public function custom_fields_in_appraisal_admin_list_edit( $existing_columns )
+    {
+        if ( empty( $existing_columns ) && ! is_array( $existing_columns ) ) {
+            $existing_columns = array();
+        }
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && substr($custom_field['meta_box'], 0, 10) == 'appraisal_' )
+                {
+                    $existing_columns[$custom_field['field_name']] = __( $custom_field['field_label'], 'propertyhive' );
+                }
+            }
+        }
+
+        return $existing_columns;
+    }
+
+    public function custom_fields_in_appraisal_admin_list( $column )
+    {
+        global $post, $propertyhive, $the_appraisal;
+
+        if ( empty( $the_appraisal ) || $the_appraisal->ID != $post->ID ) 
+        {
+            $the_appraisal = new PH_Appraisal( $post->ID );
+        }
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && substr($custom_field['meta_box'], 0, 10) == 'appraisal_' && $custom_field['field_name'] == $column )
+                {
+                    if ( $the_appraisal->{$custom_field['field_name']} != '' )
+                    {
+                        if ( $custom_field['field_type'] == 'multiselect' )
+                        {
+                            $values = get_post_meta( $the_appraisal->id, $custom_field['field_name'], TRUE );
+                            if ( !empty($values) )
+                            {
+                                echo implode(", ", $values);
+                            }
+                        }
+                        elseif ( $custom_field['field_type'] == 'date' )
+                        {
+                            echo date(get_option( 'date_format' ), strtotime($the_appraisal->{$custom_field['field_name']}));
+                        }
+                        else
+                        {
+                            echo $the_appraisal->{$custom_field['field_name']};
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public function custom_fields_in_appraisal_admin_list_sort( $columns ) 
+    {
+        $custom = array();
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && isset($custom_field['admin_list_sortable']) && $custom_field['admin_list_sortable'] == '1' && substr($custom_field['meta_box'], 0, 10) == 'appraisal_' )
+                {
+                    $custom[$custom_field['field_name']] = $custom_field['field_name'];
+                }
+            }
+        }
+
+        return wp_parse_args( $custom, $columns );
+    }
+
+    public function custom_fields_in_appraisal_admin_list_orderby( $vars ) 
+    {
+        if ( isset( $vars['orderby'] ) ) 
+        {
+            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+            if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+            {
+                foreach ( $current_settings['custom_fields'] as $custom_field )
+                {
+                    if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && isset($custom_field['admin_list_sortable']) && $custom_field['admin_list_sortable'] == '1' && substr($custom_field['meta_box'], 0, 10) == 'appraisal_' )
+                    {
+                        if ( $custom_field['field_name'] == $vars['orderby'] ) 
+                        {
+                            $vars = array_merge( $vars, array(
+                                'meta_key'  => $custom_field['field_name'],
+                                'orderby'   => 'meta_value'
+                            ) );
+                        }
+                    }
+                }
+            }
+        }
+
+        return $vars;
+    }
+
+    // Additional fields in viewing admin list
+    public function custom_fields_in_viewing_admin_list_edit( $existing_columns )
+    {
+        if ( empty( $existing_columns ) && ! is_array( $existing_columns ) ) {
+            $existing_columns = array();
+        }
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && substr($custom_field['meta_box'], 0, 8) == 'viewing_' )
+                {
+                    $existing_columns[$custom_field['field_name']] = __( $custom_field['field_label'], 'propertyhive' );
+                }
+            }
+        }
+
+        return $existing_columns;
+    }
+
+    public function custom_fields_in_viewing_admin_list( $column )
+    {
+        global $post, $propertyhive, $the_viewing;
+
+        if ( empty( $the_viewing ) || $the_viewing->ID != $post->ID ) 
+        {
+            $the_viewing = new PH_Viewing( $post->ID );
+        }
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && substr($custom_field['meta_box'], 0, 8) == 'viewing_' && $custom_field['field_name'] == $column )
+                {
+                    if ( $the_viewing->{$custom_field['field_name']} != '' )
+                    {
+                        if ( $custom_field['field_type'] == 'multiselect' )
+                        {
+                            $values = get_post_meta( $the_viewing->id, $custom_field['field_name'], TRUE );
+                            if ( !empty($values) )
+                            {
+                                echo implode(", ", $values);
+                            }
+                        }
+                        elseif ( $custom_field['field_type'] == 'date' )
+                        {
+                            echo date(get_option( 'date_format' ), strtotime($the_viewing->{$custom_field['field_name']}));
+                        }
+                        else
+                        {
+                            echo $the_viewing->{$custom_field['field_name']};
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public function custom_fields_in_viewing_admin_list_sort( $columns ) 
+    {
+        $custom = array();
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && isset($custom_field['admin_list_sortable']) && $custom_field['admin_list_sortable'] == '1' && substr($custom_field['meta_box'], 0, 8) == 'viewing_' )
+                {
+                    $custom[$custom_field['field_name']] = $custom_field['field_name'];
+                }
+            }
+        }
+
+        return wp_parse_args( $custom, $columns );
+    }
+
+    public function custom_fields_in_viewing_admin_list_orderby( $vars ) 
+    {
+        if ( isset( $vars['orderby'] ) ) 
+        {
+            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+            if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+            {
+                foreach ( $current_settings['custom_fields'] as $custom_field )
+                {
+                    if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && isset($custom_field['admin_list_sortable']) && $custom_field['admin_list_sortable'] == '1' && substr($custom_field['meta_box'], 0, 8) == 'viewing_' )
+                    {
+                        if ( $custom_field['field_name'] == $vars['orderby'] ) 
+                        {
+                            $vars = array_merge( $vars, array(
+                                'meta_key'  => $custom_field['field_name'],
+                                'orderby'   => 'meta_value'
+                            ) );
+                        }
+                    }
+                }
+            }
+        }
+
+        return $vars;
+    }
+
+    // Additional fields in offer admin list
+    public function custom_fields_in_offer_admin_list_edit( $existing_columns )
+    {
+        if ( empty( $existing_columns ) && ! is_array( $existing_columns ) ) {
+            $existing_columns = array();
+        }
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && substr($custom_field['meta_box'], 0, 6) == 'offer_' )
+                {
+                    $existing_columns[$custom_field['field_name']] = __( $custom_field['field_label'], 'propertyhive' );
+                }
+            }
+        }
+
+        return $existing_columns;
+    }
+
+    public function custom_fields_in_offer_admin_list( $column )
+    {
+        global $post, $propertyhive, $the_offer;
+
+        if ( empty( $the_offer ) || $the_offer->ID != $post->ID ) 
+        {
+            $the_offer = new PH_Offer( $post->ID );
+        }
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && substr($custom_field['meta_box'], 0, 6) == 'offer_' && $custom_field['field_name'] == $column )
+                {
+                    if ( $the_offer->{$custom_field['field_name']} != '' )
+                    {
+                        if ( $custom_field['field_type'] == 'multiselect' )
+                        {
+                            $values = get_post_meta( $the_offer->id, $custom_field['field_name'], TRUE );
+                            if ( !empty($values) )
+                            {
+                                echo implode(", ", $values);
+                            }
+                        }
+                        elseif ( $custom_field['field_type'] == 'date' )
+                        {
+                            echo date(get_option( 'date_format' ), strtotime($the_offer->{$custom_field['field_name']}));
+                        }
+                        else
+                        {
+                            echo $the_offer->{$custom_field['field_name']};
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public function custom_fields_in_offer_admin_list_sort( $columns ) 
+    {
+        $custom = array();
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && isset($custom_field['admin_list_sortable']) && $custom_field['admin_list_sortable'] == '1' && substr($custom_field['meta_box'], 0, 6) == 'offer_' )
+                {
+                    $custom[$custom_field['field_name']] = $custom_field['field_name'];
+                }
+            }
+        }
+
+        return wp_parse_args( $custom, $columns );
+    }
+
+    public function custom_fields_in_offer_admin_list_orderby( $vars ) 
+    {
+        if ( isset( $vars['orderby'] ) ) 
+        {
+            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+            if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+            {
+                foreach ( $current_settings['custom_fields'] as $custom_field )
+                {
+                    if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && isset($custom_field['admin_list_sortable']) && $custom_field['admin_list_sortable'] == '1' && substr($custom_field['meta_box'], 0, 6) == 'offer_' )
+                    {
+                        if ( $custom_field['field_name'] == $vars['orderby'] ) 
+                        {
+                            $vars = array_merge( $vars, array(
+                                'meta_key'  => $custom_field['field_name'],
+                                'orderby'   => 'meta_value'
+                            ) );
+                        }
+                    }
+                }
+            }
+        }
+
+        return $vars;
+    }
+
+    // Additional fields in sale admin list
+    public function custom_fields_in_sale_admin_list_edit( $existing_columns )
+    {
+        if ( empty( $existing_columns ) && ! is_array( $existing_columns ) ) {
+            $existing_columns = array();
+        }
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && substr($custom_field['meta_box'], 0, 5) == 'sale_' )
+                {
+                    $existing_columns[$custom_field['field_name']] = __( $custom_field['field_label'], 'propertyhive' );
+                }
+            }
+        }
+
+        return $existing_columns;
+    }
+
+    public function custom_fields_in_sale_admin_list( $column )
+    {
+        global $post, $propertyhive, $the_sale;
+
+        if ( empty( $the_sale ) || $the_sale->ID != $post->ID ) 
+        {
+            $the_sale = new PH_Sale( $post->ID );
+        }
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && substr($custom_field['meta_box'], 0, 5) == 'sale_' && $custom_field['field_name'] == $column )
+                {
+                    if ( $the_sale->{$custom_field['field_name']} != '' )
+                    {
+                        if ( $custom_field['field_type'] == 'multiselect' )
+                        {
+                            $values = get_post_meta( $the_sale->id, $custom_field['field_name'], TRUE );
+                            if ( !empty($values) )
+                            {
+                                echo implode(", ", $values);
+                            }
+                        }
+                        elseif ( $custom_field['field_type'] == 'date' )
+                        {
+                            echo date(get_option( 'date_format' ), strtotime($the_sale->{$custom_field['field_name']}));
+                        }
+                        else
+                        {
+                            echo $the_sale->{$custom_field['field_name']};
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public function custom_fields_in_sale_admin_list_sort( $columns ) 
+    {
+        $custom = array();
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && isset($custom_field['admin_list_sortable']) && $custom_field['admin_list_sortable'] == '1' && substr($custom_field['meta_box'], 0, 5) == 'sale_' )
+                {
+                    $custom[$custom_field['field_name']] = $custom_field['field_name'];
+                }
+            }
+        }
+
+        return wp_parse_args( $custom, $columns );
+    }
+
+    public function custom_fields_in_sale_admin_list_orderby( $vars ) 
+    {
+        if ( isset( $vars['orderby'] ) ) 
+        {
+            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+            if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+            {
+                foreach ( $current_settings['custom_fields'] as $custom_field )
+                {
+                    if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && isset($custom_field['admin_list_sortable']) && $custom_field['admin_list_sortable'] == '1' && substr($custom_field['meta_box'], 0, 5) == 'sale_' )
+                    {
+                        if ( $custom_field['field_name'] == $vars['orderby'] ) 
+                        {
                             $vars = array_merge( $vars, array(
                                 'meta_key'  => $custom_field['field_name'],
                                 'orderby'   => 'meta_value'
@@ -718,10 +1301,6 @@ final class PH_Template_Assistant {
 
     public function reflect_updated_departments_in_search_forms()
     {
-        $sales_active = get_option( 'propertyhive_active_departments_sales', '' );
-        $lettings_active = get_option( 'propertyhive_active_departments_lettings', '' );
-        $commercial_active = get_option( 'propertyhive_active_departments_commercial', '' );
-
         $current_settings = get_option( 'propertyhive_template_assistant', array() );
 
         if ( isset($current_settings['search_forms']) && !empty($current_settings['search_forms']) )
@@ -913,7 +1492,7 @@ final class PH_Template_Assistant {
             ''         => __( 'Search Results', 'propertyhive' ),
             'flags'         => __( 'Flags', 'propertyhive' ),
             'search-forms'         => __( 'Search Forms', 'propertyhive' ),
-            'custom-fields'        => __( 'Custom Fields', 'propertyhive' ),
+            'custom-fields'        => __( 'Additional Fields', 'propertyhive' ),
             'text-translation'         => __( 'Text Substitution', 'propertyhive' ),
         );
 
@@ -2328,7 +2907,7 @@ final class PH_Template_Assistant {
         $form_controls = ph_get_search_form_fields();
         $active_fields = apply_filters( 'propertyhive_search_form_fields_' . $current_id, $form_controls );
 
-        // Add any custom fields
+        // Add any additional fields
         if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
         {
             foreach ( $current_settings['custom_fields'] as $id => $custom_field )
@@ -2523,7 +3102,7 @@ final class PH_Template_Assistant {
 
         $settings = array(
 
-            array( 'title' => __( 'Custom Fields', 'propertyhive' ), 'type' => 'title', 'desc' => '', 'id' => 'template_assistant_custom_fields_settings' )
+            array( 'title' => __( 'Additional Fields', 'propertyhive' ), 'type' => 'title', 'desc' => '', 'id' => 'template_assistant_custom_fields_settings' )
 
         );
 
@@ -2550,11 +3129,11 @@ final class PH_Template_Assistant {
                 &nbsp;
             </th>
             <td class="forminp forminp-button">
-                <a href="<?php echo admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=addcustomfield' ); ?>" class="button alignright"><?php echo __( 'Add New Custom Field', 'propertyhive' ); ?></a>
+                <a href="<?php echo admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=addcustomfield' ); ?>" class="button alignright"><?php echo __( 'Add New Field', 'propertyhive' ); ?></a>
             </td>
         </tr>
         <tr valign="top">
-            <th scope="row" class="titledesc"><?php _e( 'Custom Fields', 'propertyhive' ) ?></th>
+            <th scope="row" class="titledesc"><?php _e( 'Additional Fields', 'propertyhive' ) ?></th>
             <td class="forminp">
                 <table class="ph_portals widefat" cellspacing="0">
                     <thead>
@@ -2617,7 +3196,7 @@ final class PH_Template_Assistant {
                             else
                             {
                                 echo '<tr>';
-                                    echo '<td align="center" colspan="4">' . __( 'No custom fields exist', 'propertyhive' ) . '</td>';
+                                    echo '<td align="center" colspan="7">' . __( 'No additional fields exist', 'propertyhive' ) . '</td>';
                                 echo '</tr>';
                             }
                         ?>
@@ -2630,7 +3209,7 @@ final class PH_Template_Assistant {
                 &nbsp;
             </th>
             <td class="forminp forminp-button">
-                <a href="<?php echo admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=addcustomfield' ); ?>" class="button alignright"><?php echo __( 'Add New Custom Field', 'propertyhive' ); ?></a>
+                <a href="<?php echo admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=addcustomfield' ); ?>" class="button alignright"><?php echo __( 'Add New Field', 'propertyhive' ); ?></a>
             </td>
         </tr>
         <?php
@@ -2667,7 +3246,7 @@ final class PH_Template_Assistant {
 
         $settings = array(
 
-            array( 'title' => __( ( $current_section == 'addcustomfield' ? 'Add Custom Field' : 'Edit Custom Field' ), 'propertyhive' ), 'type' => 'title', 'desc' => '', 'id' => 'customfield' ),
+            array( 'title' => __( ( $current_section == 'addcustomfield' ? 'Add Additional Field' : 'Edit Additional Field' ), 'propertyhive' ), 'type' => 'title', 'desc' => '', 'id' => 'customfield' ),
 
         );
 
@@ -2714,22 +3293,68 @@ final class PH_Template_Assistant {
             'type'      => 'custom_field_dropdown_options',
         );
 
+        $options = array(
+            'property_address' => 'Property Address',
+            'property_department' => 'Property Department',
+        );
+
+        if ( get_option( 'propertyhive_active_departments_sales', '' ) == 'yes' || get_option( 'propertyhive_active_departments_lettings', '' ) == 'yes' )
+        {
+            $options['property_residential_details'] = 'Property Residential Details';
+
+            if ( get_option( 'propertyhive_active_departments_sales', '' ) == 'yes' )
+            {
+                $options['property_residential_sales_details'] = 'Property Residential Sales Details';
+            }
+            if ( get_option( 'propertyhive_active_departments_lettings', '' ) == 'yes' )
+            {
+                $options['property_residential_lettings_details'] = 'Property Residential Lettings Details';
+            }
+        }
+
+        if ( get_option( 'propertyhive_active_departments_commercial', '' ) == 'yes' )
+        {
+            $options['property_commercial_details'] = 'Property Commercial Details';
+        }
+
+        if ( get_option('propertyhive_module_disabled_contacts', '') != 'yes' )
+        {
+            $options['contact_correspondence_address'] = 'Contact Correspondence Address';
+            $options['contact_contact_details'] = 'Contact Contact Details';
+        }
+
+        if ( get_option('propertyhive_module_disabled_enquiries', '') != 'yes' )
+        {
+            $options['enquiry_record_details'] = 'Enquiry Record Details';
+        }
+
+        if ( get_option('propertyhive_module_disabled_appraisals', '') != 'yes' )
+        {
+            $options['appraisal_details'] = 'Appraisal Details';
+            $options['appraisal_event'] = 'Appraisal Event Details';
+        }
+
+        if ( get_option('propertyhive_module_disabled_viewings', '') != 'yes' )
+        {
+            $options['viewing_details'] = 'Viewing Details';
+            $options['viewing_event'] = 'Viewing Event Details';
+        }
+
+        if ( get_option('propertyhive_module_disabled_offers_sales', '') != 'yes' )
+        {
+            $options['offer_details'] = 'Offer Details';
+            $options['sale_details'] = 'Sale Details';
+        }
+
+        $options = apply_filters( 'propertyhive_template_assistant_custom_field_sections', $options );
+
         $settings[] = array(
             'title' => __( 'Section', 'propertyhive' ),
             'id'        => 'meta_box',
             'default'   => ( (isset($custom_field_details['meta_box'])) ? $custom_field_details['meta_box'] : ''),
             'type'      => 'select',
             'desc'  =>  __( 'Please select which meta box on the property record this field should appear in', 'propertyhive' ),
-            'options' => array(
-                'property_address' => 'Property Address',
-                'property_department' => 'Property Department',
-                'property_residential_details' => 'Property Residential Details',
-                'property_residential_sales_details' => 'Property Residential Sales Details',
-                'property_residential_lettings_details' => 'Property Residential Lettings Details',
-                'property_commercial_details' => 'Property Commercial Details',
-                'contact_correspondence_address' => 'Contact Correspondence Address',
-                'contact_contact_details' => 'Contact Contact Details',
-            )
+            'options' => $options
         );
 
         $settings[] = array(
@@ -2738,7 +3363,7 @@ final class PH_Template_Assistant {
                 'default'   => ( (isset($custom_field_details['display_on_website']) && $custom_field_details['display_on_website'] == '1') ? 'yes' : ''),
                 'type'      => 'checkbox',
                 'desc_tip'  =>  true,
-                'desc'      => __( 'Only applicable to property related custom fields', 'propertyhive' )
+                'desc'      => __( 'Only applicable to property related additional fields', 'propertyhive' )
             );
 
         $settings[] = array(
