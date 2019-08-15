@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=N68UH
 Requires at least: 3.8
 Tested up to: 5.2.2
 Stable tag: trunk
-Version: 1.0.22
+Version: 1.0.23
 Homepage: http://wp-property-hive.com/addons/template-assistant/
 
 This add on for Property Hive assists with the layout of property pages and more.
@@ -27,6 +27,11 @@ Once installed and activated, you can access the settings for this add on by nav
 Updating should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 1.0.23 =
+* Rename 'Custom Fields' to 'Additional Fields' to avoid confusion with the existing custom fields like property type and availability
+* Added more sections to choose from when adding additional fields so you can now add these fields to viewings, offers etc.
+* Added a new filter 'propertyhive_template_assistant_custom_field_sections' allowing third party plugins to add more sections that additional fields can be added to
 
 = 1.0.22 =
 * Removed hardcoded departments when building search forms and instead use new ph_get_departments() function for when third party plugins (such as the new student accommodation add on) ad their own department
