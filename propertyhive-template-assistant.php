@@ -259,12 +259,12 @@ final class PH_Template_Assistant {
                                             $options[$dropdown_option] = $dropdown_option;
                                         }
                                     }
-                                    propertyhive_wp_select( array( 
+                                    propertyhive_wp_select( apply_filters( 'propertyhive_template_assistant_custom_field_args_' . ltrim($custom_field['field_name'], '_'), array( 
                                         'id' => $custom_field['field_name'], 
                                         'label' => $custom_field['field_label'], 
                                         'desc_tip' => false,
                                         'options' => $options
-                                    ) );
+                                    ), $thepostid ) );
                                 }
                                 elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'multiselect' )
                                 {
@@ -296,16 +296,16 @@ final class PH_Template_Assistant {
                                 }
                                 elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'textarea' )
                                 {
-                                    propertyhive_wp_textarea_input( array( 
+                                    propertyhive_wp_textarea_input( apply_filters( 'propertyhive_template_assistant_custom_field_args_' . ltrim($custom_field['field_name'], '_'), array( 
                                         'id' => $custom_field['field_name'], 
                                         'label' => $custom_field['field_label'], 
                                         'desc_tip' => false,
                                         'type' => 'text'
-                                    ) );
+                                    ), $thepostid ) );
                                 }
                                 elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'date' )
                                 {
-                                    propertyhive_wp_text_input( array( 
+                                    propertyhive_wp_text_input( apply_filters( 'propertyhive_template_assistant_custom_field_args_' . ltrim($custom_field['field_name'], '_'), array( 
                                         'id' => $custom_field['field_name'], 
                                         'label' => $custom_field['field_label'], 
                                         'desc_tip' => false,
@@ -316,16 +316,16 @@ final class PH_Template_Assistant {
                                             'maxlength' => 10,
                                             'pattern' => "[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])"
                                         )
-                                    ) );
+                                    ), $thepostid ) );
                                 }
                                 else
                                 {
-                                    propertyhive_wp_text_input( array( 
+                                    propertyhive_wp_text_input( apply_filters( 'propertyhive_template_assistant_custom_field_args_' . ltrim($custom_field['field_name'], '_'), array( 
                                         'id' => $custom_field['field_name'], 
                                         'label' => $custom_field['field_label'], 
                                         'desc_tip' => false,
                                         'type' => 'text'
-                                    ) );
+                                    ), $thepostid ) );
                                 }
                             }
                         }
@@ -337,11 +337,16 @@ final class PH_Template_Assistant {
 
                         $current_settings = get_option( 'propertyhive_template_assistant', array() );
 
-                        foreach ( $current_settings['custom_fields'] as $custom_field )
+                        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
                         {
-                            if ( $custom_field['meta_box'] == $meta_box_being_done )
+                            $current_settings['custom_fields'] = apply_filters( 'propertyhive_template_assistant_custom_fields_to_save', $current_settings['custom_fields'] );
+
+                            foreach ( $current_settings['custom_fields'] as $custom_field )
                             {
-                                update_post_meta( $post_id, $custom_field['field_name'], (isset($_POST[$custom_field['field_name']]) ? $_POST[$custom_field['field_name']] : '') );
+                                if ( $custom_field['meta_box'] == $meta_box_being_done )
+                                {
+                                    update_post_meta( $post_id, $custom_field['field_name'], (isset($_POST[$custom_field['field_name']]) ? $_POST[$custom_field['field_name']] : '') );
+                                }
                             }
                         }
                     });
