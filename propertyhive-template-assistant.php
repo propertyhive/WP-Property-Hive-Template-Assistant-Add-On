@@ -2965,6 +2965,14 @@ final class PH_Template_Assistant {
             <td class="forminp">
                 <div id="sortable2" class="connectedSortable" style="min-height:30px;">
                 <?php
+                    if ( !class_exists('PH_Radial_Search') )
+                    {
+                        // Show radial search with link to buy add on
+                        echo '<div class="group" id="radius-placeholder">
+                            <h3>radius</h3>
+                            <div class="">This field requires the <a href="https://wp-property-hive.com/addons/radial-search/" target="_blank">Radial Search add on</a></div>
+                        </div>';
+                    }
                     foreach ( $inactive_fields as $id => $field )
                     {
                         if ( isset( $field['type'] ) && $field['type'] == 'hidden' ) { continue; }
@@ -3020,6 +3028,10 @@ final class PH_Template_Assistant {
                     {
                         // Update hidden fields
                         var fields_order = $(this).sortable('toArray');
+
+                        fields_order = jQuery.grep(fields_order, function(value) {
+                            return value != 'radius-placeholder';
+                        });
                         
                         $('#active_fields_order').val( fields_order.join("|") );
                     }
@@ -3049,6 +3061,10 @@ final class PH_Template_Assistant {
                     {
                         // Update hidden fields
                         var fields_order = $(this).sortable('toArray');
+
+                        fields_order = jQuery.grep(fields_order, function(value) {
+                            return value != 'radius-placeholder';
+                        });
                         
                         $('#inactive_fields_order').val( fields_order.join("|") );
                     }
