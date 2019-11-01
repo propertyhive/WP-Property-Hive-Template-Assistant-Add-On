@@ -127,6 +127,8 @@ final class PH_Template_Assistant {
         add_action( 'manage_sale_posts_custom_column', array( $this, 'custom_fields_in_sale_admin_list' ), 2 );
         add_filter( 'manage_edit-sale_sortable_columns', array( $this, 'custom_fields_in_sale_admin_list_sort' ) );
         add_filter( 'request', array( $this, 'custom_fields_in_sale_admin_list_orderby' ) );
+
+        add_filter( 'propertyhive_room_breakdown_data', array( $this, 'add_custom_fields_to_room_breakdown' ), 10, 3 ); // Applicable when Rooms / Student Accommodation add on active
         
         if ( isset($current_settings['search_result_default_order']) && $current_settings['search_result_default_order'] != '' )
         {
@@ -355,6 +357,31 @@ final class PH_Template_Assistant {
                 }
             }
         }
+    }
+
+    public function add_custom_fields_to_room_breakdown( $room_data, $post_id, $room )
+    {
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['display_on_website']) && $custom_field['display_on_website'] == '1' && $custom_field['meta_box'] == 'property_rooms_breakdown' )
+                {
+                    if ( $room->{$custom_field['field_name']} != '' )
+                    {
+                        $room_data[] = array(
+                            'class' => sanitize_title($custom_field['field_name']),
+                            'label' => __( $custom_field['field_label'], 'propertyhive' ),
+                            'value' => $room->{$custom_field['field_name']}
+                        );
+                    }
+                }
+            }
+        }
+
+        return $room_data;
     }
 
     public function plugin_add_settings_link( $links )
