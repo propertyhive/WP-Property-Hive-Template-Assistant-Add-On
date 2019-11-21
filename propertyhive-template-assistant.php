@@ -356,6 +356,66 @@ final class PH_Template_Assistant {
                     $meta_boxes_done[] = $custom_field['meta_box'];
                 }
             }
+
+            $shortcodes = array(
+                'properties',
+                'recent_properties',
+                'featured_properties',
+                'similar_properties',
+            );
+
+            foreach ( $shortcodes as $shortcode )
+            {
+                add_filter( 'shortcode_atts_' . $shortcode, function ($out, $pairs, $atts, $shortcode)
+                {
+                    $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+                    if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+                    {
+                        foreach ( $current_settings['custom_fields'] as $custom_field )
+                        {
+                            if ( strpos($custom_field['meta_box'], 'property') !== FALSE )
+                            {
+                                $out[trim($custom_field['field_name'], '_')] = ( isset($atts[trim($custom_field['field_name'], '_')]) ? $atts[trim($custom_field['field_name'], '_')] : '' );
+                            }
+                        }
+                    }
+
+                    return $out;
+                }, 10, 4 );
+
+                add_filter( 'propertyhive_shortcode_' . $shortcode . '_query', function ($args, $atts)
+                {
+                    $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+                    if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+                    {
+                        foreach ( $current_settings['custom_fields'] as $custom_field )
+                        {
+                            if ( strpos($custom_field['meta_box'], 'property') !== FALSE )
+                            {
+                                if (
+                                    isset($atts[trim($custom_field['field_name'], '_')]) && 
+                                    $atts[trim($custom_field['field_name'], '_')] != ''
+                                )
+                                {
+                                    
+                                    if ( !isset($args['meta_query']) )
+                                    {
+                                        $args['meta_query'] = array();
+                                    }
+
+                                    $args['meta_query'][] = array(
+                                        'key' => $custom_field['field_name'],
+                                        'value' => $atts[trim($custom_field['field_name'], '_')],
+                                    );
+                                }
+                            }
+                        }
+                    }
+                    return $args;
+                }, 99, 2 );
+            }
         }
     }
 
