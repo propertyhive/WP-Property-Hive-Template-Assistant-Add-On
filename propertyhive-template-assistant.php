@@ -1916,6 +1916,10 @@ final class PH_Template_Assistant {
                                 {
                                     $active_fields[$field_id]['blank_option'] = stripslashes($_POST['blank_option'][$field_id]);
                                 }
+                                if ( isset($_POST['parent_terms_only'][$field_id]) && $_POST['parent_terms_only'][$field_id] != '' )
+                                {
+                                    $active_fields[$field_id]['parent_terms_only'] = true;
+                                }
 
                                 if ( isset($_POST['option_keys'][$field_id]) && is_array($_POST['option_keys'][$field_id]) && !empty($_POST['option_keys'][$field_id]) )
                                 {
@@ -1961,6 +1965,10 @@ final class PH_Template_Assistant {
                                 if ( isset($_POST['blank_option'][$field_id]) && $_POST['blank_option'][$field_id] != '' )
                                 {
                                     $inactive_fields[$field_id]['blank_option'] = stripslashes($_POST['blank_option'][$field_id]);
+                                }
+                                if ( isset($_POST['parent_terms_only'][$field_id]) && $_POST['parent_terms_only'][$field_id] != '' )
+                                {
+                                    $inactive_fields[$field_id]['parent_terms_only'] = true;
                                 }
 
                                 if ( isset($_POST['option_keys'][$field_id]) && is_array($_POST['option_keys'][$field_id]) && !empty($_POST['option_keys'][$field_id]) )
@@ -2713,6 +2721,13 @@ final class PH_Template_Assistant {
             echo '
             <p><label for="blank_option_'.$id.'">Blank Option:</label> <input type="text" name="blank_option[' . $id . ']" id="blank_option_'.$id.'" value="' . ( ( isset($field['blank_option']) ) ? htmlentities($field['blank_option']) : __( 'No Preference', 'propertyhive' ) ) . '"></p>
             ';
+
+            if ( taxonomy_exists($id) && ( $id == 'property_type' || $id == 'commercial_property_type' || $id == 'location' ) )
+            {
+                echo '
+                <p><label for="parent_terms_only_'.$id.'">Top-Level Terms Only:</label> <input type="checkbox" name="parent_terms_only[' . $id . ']" id="parent_terms_only_'.$id.'" value="yes"' . ( ( isset($field['parent_terms_only']) && $field['parent_terms_only'] === true ) ? ' checked' : '' ) . '></p>
+                ';
+            }
         }
 
         if ( isset($field['options']) && !taxonomy_exists($id) && ( !isset($field['custom_field']) || ( isset($field['custom_field']) && $field['custom_field'] === false ) ) )
