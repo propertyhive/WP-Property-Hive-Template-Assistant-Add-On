@@ -399,7 +399,6 @@ final class PH_Template_Assistant {
                                     $atts[trim($custom_field['field_name'], '_')] != ''
                                 )
                                 {
-                                    
                                     if ( !isset($args['meta_query']) )
                                     {
                                         $args['meta_query'] = array();
@@ -408,6 +407,7 @@ final class PH_Template_Assistant {
                                     $args['meta_query'][] = array(
                                         'key' => $custom_field['field_name'],
                                         'value' => $atts[trim($custom_field['field_name'], '_')],
+                                        'compare' => $custom_field['field_type'] == 'multiselect' ? 'LIKE' : '=',
                                     );
                                 }
                             }
