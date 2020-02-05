@@ -28,6 +28,9 @@ Updating should work like a charm; as always though, ensure you backup your site
 
 == Changelog ==
 
+= 1.0.29 =
+* Added setting to apply search results CSS to all pages so layout chosen effects shortcodes etc throughout site
+
 = 1.0.28 =
 * Added 'Top Level Terms Only' option when specifying fields such as property type and location in search forms
 * Correction to past release relating to passing custom fields as attributes and making it work when custom field is of type multi-select
