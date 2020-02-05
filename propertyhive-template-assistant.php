@@ -1627,10 +1627,14 @@ final class PH_Template_Assistant {
             true
         );
 
-        if ( is_post_type_archive('property') )
-        {
-            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
 
+        if ( 
+            is_post_type_archive('property') 
+            ||
+            ( isset($current_settings['search_result_css_all_pages']) && $current_settings['search_result_css_all_pages'] == 'yes' )
+        )
+        {
             if (
                 isset($current_settings['search_result_layout']) &&
                 isset($current_settings['search_result_layout']) == 2
@@ -1649,9 +1653,14 @@ final class PH_Template_Assistant {
 
     public function load_template_assistant_styles()
     {
-        if ( is_post_type_archive('property') )
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( 
+            is_post_type_archive('property') 
+            ||
+            ( isset($current_settings['search_result_css_all_pages']) && $current_settings['search_result_css_all_pages'] == 'yes' )
+        )
         {
-            $current_settings = get_option( 'propertyhive_template_assistant', array() );
             if ( isset($current_settings['search_result_css']) )
             {
                 echo '<style type="text/css">
@@ -2110,6 +2119,7 @@ final class PH_Template_Assistant {
                 'search_result_layout' => $_POST['search_result_layout'],
                 'search_result_fields' => $search_results_fields,
                 'search_result_css' => trim($_POST['search_result_css']),
+                'search_result_css_all_pages' => isset($_POST['search_result_css_all_pages']) ? 'yes' : '',
             );
 
             $propertyhive_template_assistant = array_merge($current_settings, $propertyhive_template_assistant);
@@ -2318,6 +2328,13 @@ final class PH_Template_Assistant {
                 </div>'
             );
         }
+
+        $settings[] = array(
+            'title' => __( 'Apply CSS To All Pages', 'propertyhive' ),
+            'id'        => 'search_result_css_all_pages',
+            'type'      => 'checkbox',
+            'default'   => isset($current_settings['search_result_css_all_pages']) && $current_settings['search_result_css_all_pages'] == 'yes' ? 'yes' : '',
+        );
 
         $settings[] = array(
             'type'      => 'html',
