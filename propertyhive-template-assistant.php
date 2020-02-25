@@ -3,7 +3,7 @@
  * Plugin Name: Property Hive Template Assistant Add On
  * Plugin Uri: http://wp-property-hive.com/addons/template-assistant/
  * Description: Add On for Property Hive which assists with the layout of property pages, the fields shown on search forms and allows you to manage additional fields on the property record.
- * Version: 1.0.29
+ * Version: 1.0.30
  * Author: PropertyHive
  * Author URI: http://wp-property-hive.com
  */
@@ -17,7 +17,7 @@ final class PH_Template_Assistant {
     /**
      * @var string
      */
-    public $version = '1.0.29';
+    public $version = '1.0.30';
 
     /**
      * @var PropertyHive The single instance of the class
