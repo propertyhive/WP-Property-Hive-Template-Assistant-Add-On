@@ -1929,6 +1929,10 @@ final class PH_Template_Assistant {
                                 {
                                     $active_fields[$field_id]['parent_terms_only'] = true;
                                 }
+                                if ( isset($_POST['multiselect'][$field_id]) && $_POST['multiselect'][$field_id] != '' )
+                                {
+                                    $active_fields[$field_id]['multiselect'] = true;
+                                }
 
                                 if ( isset($_POST['option_keys'][$field_id]) && is_array($_POST['option_keys'][$field_id]) && !empty($_POST['option_keys'][$field_id]) )
                                 {
@@ -1978,6 +1982,10 @@ final class PH_Template_Assistant {
                                 if ( isset($_POST['parent_terms_only'][$field_id]) && $_POST['parent_terms_only'][$field_id] != '' )
                                 {
                                     $inactive_fields[$field_id]['parent_terms_only'] = true;
+                                }
+                                if ( isset($_POST['multiselect'][$field_id]) && $_POST['multiselect'][$field_id] != '' )
+                                {
+                                    $inactive_fields[$field_id]['multiselect'] = true;
                                 }
 
                                 if ( isset($_POST['option_keys'][$field_id]) && is_array($_POST['option_keys'][$field_id]) && !empty($_POST['option_keys'][$field_id]) )
@@ -2743,6 +2751,10 @@ final class PH_Template_Assistant {
             {
                 echo '
                 <p><label for="parent_terms_only_'.$id.'">Top-Level Terms Only:</label> <input type="checkbox" name="parent_terms_only[' . $id . ']" id="parent_terms_only_'.$id.'" value="yes"' . ( ( isset($field['parent_terms_only']) && $field['parent_terms_only'] === true ) ? ' checked' : '' ) . '></p>
+                ';
+
+                echo '
+                <p><label for="multiselect_'.$id.'">Multi-Select:</label> <input type="checkbox" name="multiselect[' . $id . ']" id="multiselect_'.$id.'" value="yes"' . ( ( isset($field['multiselect']) && $field['multiselect'] === true ) ? ' checked' : '' ) . '></p>
                 ';
             }
         }
