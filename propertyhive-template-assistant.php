@@ -2759,6 +2759,13 @@ final class PH_Template_Assistant {
             }
         }
 
+        if ( $id == 'office' )
+        {
+            echo '
+            <p><label for="multiselect_'.$id.'">Multi-Select:</label> <input type="checkbox" name="multiselect[' . $id . ']" id="multiselect_'.$id.'" value="yes"' . ( ( isset($field['multiselect']) && $field['multiselect'] === true ) ? ' checked' : '' ) . '></p>
+            ';
+        }
+
         if ( isset($field['options']) && !taxonomy_exists($id) && ( !isset($field['custom_field']) || ( isset($field['custom_field']) && $field['custom_field'] === false ) ) )
         {
             echo '<p><label for="">Options: ';
