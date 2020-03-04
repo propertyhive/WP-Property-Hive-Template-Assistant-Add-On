@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=N68UH
 Requires at least: 3.8
 Tested up to: 5.3.2
 Stable tag: trunk
-Version: 1.0.30
+Version: 1.0.31
 Homepage: http://wp-property-hive.com/addons/template-assistant/
 
 This add on for Property Hive assists with the layout of property pages and more.
@@ -27,6 +27,9 @@ Once installed and activated, you can access the settings for this add on by nav
 Updating should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 1.0.31 =
+* Allowed for office dropdown in search forms to also be multi-select following last release which only applied to taxonomies
 
 = 1.0.30 =
 * Added option to set search form controls such as location and property type as new multi-select control type
