@@ -91,6 +91,9 @@ final class PH_Template_Assistant {
         add_filter( 'post_class', array( $this, 'template_assistant_property_columns_post_class'), 20, 3 );
 
         add_action( 'propertyhive_property_meta_list_end', array( $this, 'display_custom_fields_on_website' ) );
+        add_filter( 'propertyhive_user_details_form_fields', array( $this, 'display_custom_fields_on_user_details' ), 10, 1 );
+        add_action( 'propertyhive_applicant_registered', array( $this, 'save_custom_fields_on_user_details' ), 10, 2 );
+        add_action( 'propertyhive_account_details_updated', array( $this, 'save_custom_fields_on_user_details' ), 10, 2 );
 
         add_filter( 'propertyhive_property_query_meta_query', array( $this, 'custom_fields_in_meta_query' ) );
 
@@ -1474,7 +1477,7 @@ final class PH_Template_Assistant {
 
         foreach ( $custom_fields as $custom_field )
         {
-            if ( isset($custom_field['display_on_website']) && $custom_field['display_on_website'] == '1' )
+            if ( isset($custom_field['display_on_website']) && $custom_field['display_on_website'] == '1' && substr($custom_field['meta_box'], 0, 9) == 'property_' )
             {
                 if ( $custom_field['field_type'] == 'multiselect' )
                 {
@@ -1493,6 +1496,73 @@ final class PH_Template_Assistant {
                 {
                     if ( $property->{$custom_field['field_name']} != '' ) { ?><li class="<?php echo trim($custom_field['field_name'], '_'); ?>"><?php echo $custom_field['field_label']; echo ': ' . $property->{$custom_field['field_name']}; ?></li><?php }
                 }
+            }
+        }
+    }
+
+    public function display_custom_fields_on_user_details( $form_controls )
+    {
+        if ( is_user_logged_in() )
+        {
+            $current_user = wp_get_current_user();
+
+            if ( $current_user instanceof WP_User )
+            {
+                $contact = new PH_Contact( '', $current_user->ID );
+            }
+        }
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        $custom_fields = ( (isset($current_settings['custom_fields'])) ? $current_settings['custom_fields'] : array() );
+
+        foreach ( $custom_fields as $custom_field )
+        {
+            if ( isset($custom_field['display_on_user_details']) && $custom_field['display_on_user_details'] == '1' && substr($custom_field['meta_box'], 0, 8) == 'contact_' )
+            {
+                $form_controls[$custom_field['field_name']] = array(
+                    'type' => $custom_field['field_type'],
+                    'label' => $custom_field['field_label'],
+                );
+
+                if ( is_user_logged_in() && $current_user instanceof WP_User )
+                {
+                    $form_controls[$custom_field['field_name']]['value'] = $contact->{$custom_field['field_name']};
+                }
+                
+                switch ( $custom_field['field_type'] )
+                {
+                    case 'select':
+                    case 'multiselect':
+                    {
+                        $options = array('' => '');
+                        if ( isset($custom_field['dropdown_options']) && is_array($custom_field['dropdown_options']) && !empty($custom_field['dropdown_options']) )
+                        {
+                            foreach ( $custom_field['dropdown_options'] as $dropdown_option )
+                            {
+                                $options[$dropdown_option] = $dropdown_option;
+                            }
+                        }
+                        $form_controls[$custom_field['field_name']]['options'] = $options;
+                        break;
+                    }
+                }
+            }
+        }
+        return $form_controls;
+    }
+
+    public function save_custom_fields_on_user_details( $contact_post_id, $user_id )
+    {
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        $custom_fields = ( (isset($current_settings['custom_fields'])) ? $current_settings['custom_fields'] : array() );
+
+        foreach ( $custom_fields as $custom_field )
+        {
+            if ( isset($custom_field['display_on_user_details']) && $custom_field['display_on_user_details'] == '1' && substr($custom_field['meta_box'], 0, 8) == 'contact_' )
+            {
+                update_post_meta( $contact_post_id, $custom_field['field_name'], (isset($_POST[$custom_field['field_name']]) ? $_POST[$custom_field['field_name']] : '') );
             }
         }
     }
@@ -2088,6 +2158,7 @@ final class PH_Template_Assistant {
                             'dropdown_options' => ( ( isset($_POST['field_type']) && ( $_POST['field_type'] == 'select' || $_POST['field_type'] == 'multiselect' ) && isset($_POST['dropdown_options']) ) ? $_POST['dropdown_options'] : '' ),
                             'meta_box' => $_POST['meta_box'],
                             'display_on_website' => ( ( isset($_POST['display_on_website']) ) ? $_POST['display_on_website'] : '' ),
+                            'display_on_user_details' => ( ( isset($_POST['display_on_user_details']) ) ? $_POST['display_on_user_details'] : '' ),
                             'admin_list' => ( ( isset($_POST['admin_list']) ) ? $_POST['admin_list'] : '' ),
                             'admin_list_sortable' => ( ( isset($_POST['admin_list_sortable']) ) ? $_POST['admin_list_sortable'] : '' ),
                         );
@@ -2101,6 +2172,7 @@ final class PH_Template_Assistant {
                             'dropdown_options' => ( ( isset($_POST['field_type']) && ( $_POST['field_type'] == 'select' || $_POST['field_type'] == 'multiselect' ) && isset($_POST['dropdown_options']) ) ? $_POST['dropdown_options'] : '' ),
                             'meta_box' => $_POST['meta_box'],
                             'display_on_website' => ( ( isset($_POST['display_on_website']) ) ? $_POST['display_on_website'] : '' ),
+                            'display_on_user_details' => ( ( isset($_POST['display_on_user_details']) ) ? $_POST['display_on_user_details'] : '' ),
                             'admin_list' => ( ( isset($_POST['admin_list']) ) ? $_POST['admin_list'] : '' ),
                             'admin_list_sortable' => ( ( isset($_POST['admin_list_sortable']) ) ? $_POST['admin_list_sortable'] : '' ),
                         );
@@ -3422,7 +3494,7 @@ final class PH_Template_Assistant {
                 <a href="<?php echo admin_url( 'admin.php?page=ph-settings&tab=template-assistant&section=addcustomfield' ); ?>" class="button alignright"><?php echo __( 'Add New Field', 'propertyhive' ); ?></a>
             </td>
         </tr>
-        <?php
+<?php
     }
 
     public function get_template_assistant_custom_field_settings()
@@ -3568,31 +3640,40 @@ final class PH_Template_Assistant {
         );
 
         $settings[] = array(
-                'title' => __( 'Display On Website', 'propertyhive' ),
-                'id'        => 'display_on_website',
-                'default'   => ( (isset($custom_field_details['display_on_website']) && $custom_field_details['display_on_website'] == '1') ? 'yes' : ''),
-                'type'      => 'checkbox',
-                'desc_tip'  =>  true,
-                'desc'      => __( 'Only applicable to property related additional fields', 'propertyhive' )
-            );
+            'title' => __( 'Display On Website', 'propertyhive' ),
+            'id'        => 'display_on_website',
+            'default'   => ( (isset($custom_field_details['display_on_website']) && $custom_field_details['display_on_website'] == '1') ? 'yes' : ''),
+            'type'      => 'checkbox',
+            'desc_tip'  =>  true,
+            'desc'      => __( 'Only applicable to property related additional fields', 'propertyhive' )
+        );
 
         $settings[] = array(
-                'title' => __( 'Show In Admin List', 'propertyhive' ),
-                'id'        => 'admin_list',
-                'default'   => ( (isset($custom_field_details['admin_list']) && $custom_field_details['admin_list'] == '1') ? 'yes' : ''),
-                'type'      => 'checkbox',
-                'desc_tip'  =>  true,
-                'desc'      => ''
-            );
+            'title' => __( 'Display On Registration Form / My Account', 'propertyhive' ),
+            'id'        => 'display_on_user_details',
+            'default'   => ( (isset($custom_field_details['display_on_user_details']) && $custom_field_details['display_on_user_details'] == '1') ? 'yes' : ''),
+            'type'      => 'checkbox',
+            'desc_tip'  =>  true,
+            'desc'      => __( 'Only applicable to contact related additional fields where you allow users to login', 'propertyhive' )
+        );
 
         $settings[] = array(
-                'title' => __( 'Sortable In Admin List', 'propertyhive' ),
-                'id'        => 'admin_list_sortable',
-                'default'   => ( (isset($custom_field_details['admin_list_sortable']) && $custom_field_details['admin_list_sortable'] == '1') ? 'yes' : ''),
-                'type'      => 'checkbox',
-                'desc_tip'  =>  true,
-                'desc'      => ''
-            );
+            'title' => __( 'Show In Admin List', 'propertyhive' ),
+            'id'        => 'admin_list',
+            'default'   => ( (isset($custom_field_details['admin_list']) && $custom_field_details['admin_list'] == '1') ? 'yes' : ''),
+            'type'      => 'checkbox',
+            'desc_tip'  =>  true,
+            'desc'      => ''
+        );
+
+        $settings[] = array(
+            'title' => __( 'Sortable In Admin List', 'propertyhive' ),
+            'id'        => 'admin_list_sortable',
+            'default'   => ( (isset($custom_field_details['admin_list_sortable']) && $custom_field_details['admin_list_sortable'] == '1') ? 'yes' : ''),
+            'type'      => 'checkbox',
+            'desc_tip'  =>  true,
+            'desc'      => ''
+        );
 
         $settings[] = array( 'type' => 'sectionend', 'id' => 'customfield');
 
