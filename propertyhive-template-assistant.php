@@ -65,6 +65,7 @@ final class PH_Template_Assistant {
         add_action( 'admin_init', array( $this, 'check_for_reset_search_form') );
         add_action( 'admin_init', array( $this, 'check_for_delete_search_form') );
         add_action( 'admin_init', array( $this, 'check_for_delete_custom_field') );
+        add_action( 'admin_init', array( $this, 'check_for_reorder_custom_fields') );
 
         add_filter( "plugin_action_links_" . plugin_basename( __FILE__ ), array( $this, 'plugin_add_settings_link' ) );
 
@@ -1574,6 +1575,35 @@ final class PH_Template_Assistant {
         }
     }
 
+    public function check_for_reorder_custom_fields()
+    {
+        if ( isset($_GET['neworder']) && $_GET['neworder'] != '' )
+        {
+            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+            $current_id = ( !isset( $_GET['id'] ) ) ? '' : sanitize_title( $_GET['id'] );
+
+            $existing_custom_fields = ( (isset($current_settings['custom_fields'])) ? $current_settings['custom_fields'] : array() );
+
+            $new_order = explode(",", $_GET['neworder']);
+            $new_order = ph_clean($new_order);
+
+            $new_custom_fields = array();
+
+            foreach ( $new_order as $id )
+            {
+                $new_custom_fields[] = $existing_custom_fields[$id];
+            }
+
+            $current_settings['custom_fields'] = $new_custom_fields;
+
+            update_option( 'propertyhive_template_assistant', $current_settings );
+
+            header("Location: " . admin_url('admin.php?page=ph-settings&tab=template-assistant&section=custom-fields'));
+            exit();
+        }
+    }
+
     /**
      * Output sections
      */
@@ -1649,6 +1679,22 @@ final class PH_Template_Assistant {
     {
         wp_enqueue_script( 'jquery-ui-accordion' );
         wp_enqueue_script( 'jquery-ui-sortable' );
+
+        $assets_path = str_replace( array( 'http:', 'https:' ), '', untrailingslashit( plugins_url( '/', __FILE__ ) ) ) . '/assets/';
+
+        wp_register_script( 
+            'ph-template-assistant', 
+            $assets_path . 'js/admin.js', 
+            array('jquery'), 
+            PH_TEMPLATE_ASSISTANT_VERSION,
+            true
+        );
+        wp_enqueue_script( 'ph-template-assistant' );
+
+        $params = array(
+            'admin_template_assistant_settings_url' => admin_url('admin.php?page=ph-settings&tab=template-assistant'),
+        );
+        wp_localize_script( 'ph-template-assistant', 'ph_template_assistant', $params );
     }
 
     public function load_template_assistant_styles()
@@ -3282,7 +3328,17 @@ final class PH_Template_Assistant {
      */
     public function custom_fields_table() {
         global $wpdb, $post;
-        ?>
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+        $custom_fields = array();
+        if ($current_settings !== FALSE)
+        {
+            if (isset($current_settings['custom_fields']))
+            {
+                $custom_fields = $current_settings['custom_fields'];
+            }
+        }
+?>
         <tr valign="top">
             <th scope="row" class="titledesc">
                 &nbsp;
@@ -3294,7 +3350,12 @@ final class PH_Template_Assistant {
         <tr valign="top">
             <th scope="row" class="titledesc"><?php _e( 'Additional Fields', 'propertyhive' ) ?></th>
             <td class="forminp">
-                <table class="ph_portals widefat" cellspacing="0">
+                <style type="text/css">
+                    .ui-sortable-helper {
+                        display: table;
+                    }
+                </style>
+                <table class="ph_additional_fields widefat" cellspacing="0">
                     <thead>
                         <tr>
                             <th class="field-label"><?php _e( 'Field Name', 'propertyhive' ); ?></th>
@@ -3306,24 +3367,14 @@ final class PH_Template_Assistant {
                             <th class="settings">&nbsp;</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="<?php echo !empty($custom_fields) ? 'has-rows' : ''; ?>">
                         <?php
-
-                            $current_settings = get_option( 'propertyhive_template_assistant', array() );
-                            $custom_fields = array();
-                            if ($current_settings !== FALSE)
-                            {
-                                if (isset($current_settings['custom_fields']))
-                                {
-                                    $custom_fields = $current_settings['custom_fields'];
-                                }
-                            }
 
                             if (!empty($custom_fields))
                             {
                                 foreach ($custom_fields as $id => $custom_field)
                                 {
-                                    echo '<tr>';
+                                    echo '<tr id="custom_field_' . $id . '">';
                                         echo '<td class="field-label">' . $custom_field['field_label'] . '</td>';
                                         echo '<td class="section">' . ucwords( str_replace("_", " ", $custom_field['meta_box']) ) . '</td>';
                                         echo '<td class="usage">';
