@@ -15,19 +15,19 @@ jQuery(window).load(function()
 
 function ph_template_assistant_set_image_heights()
 {
-	jQuery('.propertyhive ul.properties li').height('auto');
-	jQuery('.propertyhive ul.properties li .thumbnail img').height('auto');
+	jQuery('.propertyhive ul.properties > li').height('auto');
+	jQuery('.propertyhive ul.properties > li .thumbnail img').height('auto');
 
 	// Check the top pos of the first and second and check if they're the same.
 	// This will tell us if we're in a grid or not
 	if ( 
-		jQuery('.propertyhive ul.properties li' ).eq(0).length > 0 &&
-		jQuery('.propertyhive ul.properties li' ).eq(1).length > 0 &&
-		jQuery('.propertyhive ul.properties li' ).eq(0).offset().top == jQuery('.propertyhive ul.properties li' ).eq(1).offset().top
+		jQuery('.propertyhive ul.properties > li' ).eq(0).length > 0 &&
+		jQuery('.propertyhive ul.properties > li' ).eq(1).length > 0 &&
+		jQuery('.propertyhive ul.properties > li' ).eq(0).offset().top == jQuery('.propertyhive ul.properties > li' ).eq(1).offset().top
 	)
 	{
 		// Make the images the same height
-		jQuery('.propertyhive ul.properties li .thumbnail img').each(function()
+		jQuery('.propertyhive ul.properties > li .thumbnail img').each(function()
 		{
 			var ratio = 200 / 300;
 			jQuery(this).height( jQuery(this).width() * ratio );
@@ -38,7 +38,7 @@ function ph_template_assistant_set_image_heights()
 		var previousTop = 0;
 		var maxRowHeight = 0;
 		var elements_in_row = new Array;
-		jQuery('.propertyhive ul.properties li').each(function()
+		jQuery('.propertyhive ul.properties > li').each(function()
 		{    
 	        var this_top = jQuery(this).offset().top;
 	        var this_height = jQuery(this).height();
