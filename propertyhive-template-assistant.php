@@ -3582,50 +3582,50 @@ final class PH_Template_Assistant {
 
         if ( get_option( 'propertyhive_active_departments_sales', '' ) == 'yes' || get_option( 'propertyhive_active_departments_lettings', '' ) == 'yes' )
         {
-            $options['property_residential_details'] = 'Property Residential Details';
+            $options['property_residential_details'] = __( 'Property Residential Details', 'propertyhive' );
 
             if ( get_option( 'propertyhive_active_departments_sales', '' ) == 'yes' )
             {
-                $options['property_residential_sales_details'] = 'Property Residential Sales Details';
+                $options['property_residential_sales_details'] = __( 'Property Residential Sales Details', 'propertyhive' );
             }
             if ( get_option( 'propertyhive_active_departments_lettings', '' ) == 'yes' )
             {
-                $options['property_residential_lettings_details'] = 'Property Residential Lettings Details';
+                $options['property_residential_lettings_details'] = __( 'Property Residential Lettings Details', 'propertyhive' );
             }
         }
 
         if ( get_option( 'propertyhive_active_departments_commercial', '' ) == 'yes' )
         {
-            $options['property_commercial_details'] = 'Property Commercial Details';
+            $options['property_commercial_details'] = __( 'Property Commercial Details', 'propertyhive' );
         }
 
         if ( get_option('propertyhive_module_disabled_contacts', '') != 'yes' )
         {
-            $options['contact_correspondence_address'] = 'Contact Correspondence Address';
-            $options['contact_contact_details'] = 'Contact Contact Details';
+            $options['contact_correspondence_address'] = __( 'Contact Correspondence Address', 'propertyhive' );
+            $options['contact_contact_details'] = __( 'Contact Contact Details', 'propertyhive' );
         }
 
         if ( get_option('propertyhive_module_disabled_enquiries', '') != 'yes' )
         {
-            $options['enquiry_record_details'] = 'Enquiry Record Details';
+            $options['enquiry_record_details'] = __( 'Enquiry Record Details', 'propertyhive' );
         }
 
         if ( get_option('propertyhive_module_disabled_appraisals', '') != 'yes' )
         {
-            $options['appraisal_details'] = 'Appraisal Details';
-            $options['appraisal_event'] = 'Appraisal Event Details';
+            $options['appraisal_details'] = __( 'Appraisal Details', 'propertyhive' );
+            $options['appraisal_event'] = __( 'Appraisal Event Details', 'propertyhive' );
         }
 
         if ( get_option('propertyhive_module_disabled_viewings', '') != 'yes' )
         {
-            $options['viewing_details'] = 'Viewing Details';
-            $options['viewing_event'] = 'Viewing Event Details';
+            $options['viewing_details'] = __( 'Viewing Details', 'propertyhive' );
+            $options['viewing_event'] = __( 'Viewing Event Details', 'propertyhive' );
         }
 
         if ( get_option('propertyhive_module_disabled_offers_sales', '') != 'yes' )
         {
-            $options['offer_details'] = 'Offer Details';
-            $options['sale_details'] = 'Sale Details';
+            $options['offer_details'] = __( 'Offer Details', 'propertyhive' );
+            $options['sale_details'] = __( 'Sale Details', 'propertyhive' );
         }
 
         $options = apply_filters( 'propertyhive_template_assistant_custom_field_sections', $options );
