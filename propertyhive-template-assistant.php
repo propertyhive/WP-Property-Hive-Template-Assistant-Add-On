@@ -2158,6 +2158,7 @@ final class PH_Template_Assistant {
                             'dropdown_options' => ( ( isset($_POST['field_type']) && ( $_POST['field_type'] == 'select' || $_POST['field_type'] == 'multiselect' ) && isset($_POST['dropdown_options']) ) ? $_POST['dropdown_options'] : '' ),
                             'meta_box' => $_POST['meta_box'],
                             'display_on_website' => ( ( isset($_POST['display_on_website']) ) ? $_POST['display_on_website'] : '' ),
+                            'display_on_applicant_requirements' => ( ( isset($_POST['display_on_applicant_requirements']) ) ? $_POST['display_on_applicant_requirements'] : '' ),
                             'display_on_user_details' => ( ( isset($_POST['display_on_user_details']) ) ? $_POST['display_on_user_details'] : '' ),
                             'admin_list' => ( ( isset($_POST['admin_list']) ) ? $_POST['admin_list'] : '' ),
                             'admin_list_sortable' => ( ( isset($_POST['admin_list_sortable']) ) ? $_POST['admin_list_sortable'] : '' ),
@@ -2172,6 +2173,7 @@ final class PH_Template_Assistant {
                             'dropdown_options' => ( ( isset($_POST['field_type']) && ( $_POST['field_type'] == 'select' || $_POST['field_type'] == 'multiselect' ) && isset($_POST['dropdown_options']) ) ? $_POST['dropdown_options'] : '' ),
                             'meta_box' => $_POST['meta_box'],
                             'display_on_website' => ( ( isset($_POST['display_on_website']) ) ? $_POST['display_on_website'] : '' ),
+                            'display_on_applicant_requirements' => ( ( isset($_POST['display_on_applicant_requirements']) ) ? $_POST['display_on_applicant_requirements'] : '' ),
                             'display_on_user_details' => ( ( isset($_POST['display_on_user_details']) ) ? $_POST['display_on_user_details'] : '' ),
                             'admin_list' => ( ( isset($_POST['admin_list']) ) ? $_POST['admin_list'] : '' ),
                             'admin_list_sortable' => ( ( isset($_POST['admin_list_sortable']) ) ? $_POST['admin_list_sortable'] : '' ),
@@ -3646,6 +3648,16 @@ final class PH_Template_Assistant {
             'type'      => 'checkbox',
         );
 
+        if ( get_option('propertyhive_module_disabled_contacts', '') != 'yes' )
+        {
+            $settings[] = array(
+                'title' => __( 'Add As Match Field To Applicant Requirements', 'propertyhive' ),
+                'id'        => 'display_on_applicant_requirements',
+                'default'   => ( (isset($custom_field_details['display_on_applicant_requirements']) && $custom_field_details['display_on_applicant_requirements'] == '1') ? 'yes' : ''),
+                'type'      => 'checkbox',
+            );
+        }
+
         $settings[] = array(
             'title' => __( 'Display On Registration Form / My Account', 'propertyhive' ),
             'id'        => 'display_on_user_details',
@@ -3688,11 +3700,13 @@ final class PH_Template_Assistant {
                     var meta_box = jQuery(\'#meta_box\').val();
 
                     jQuery(\'#row_display_on_website\').hide();
+                    jQuery(\'#row_display_on_applicant_requirements\').hide();
                     jQuery(\'#row_display_on_user_details\').hide();
 
                     if ( meta_box.indexOf(\'property_\') != -1 )
                     {
                         jQuery(\'#row_display_on_website\').show();
+                        jQuery(\'#row_display_on_applicant_requirements\').show();
                     }
                     if ( meta_box.indexOf(\'contact_\') != -1 )
                     {
