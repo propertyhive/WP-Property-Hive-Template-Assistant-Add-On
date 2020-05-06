@@ -3644,8 +3644,6 @@ final class PH_Template_Assistant {
             'id'        => 'display_on_website',
             'default'   => ( (isset($custom_field_details['display_on_website']) && $custom_field_details['display_on_website'] == '1') ? 'yes' : ''),
             'type'      => 'checkbox',
-            'desc_tip'  =>  true,
-            'desc'      => __( 'Only applicable to property related additional fields', 'propertyhive' )
         );
 
         $settings[] = array(
@@ -3653,8 +3651,6 @@ final class PH_Template_Assistant {
             'id'        => 'display_on_user_details',
             'default'   => ( (isset($custom_field_details['display_on_user_details']) && $custom_field_details['display_on_user_details'] == '1') ? 'yes' : ''),
             'type'      => 'checkbox',
-            'desc_tip'  =>  true,
-            'desc'      => __( 'Only applicable to contact related additional fields where you allow users to login', 'propertyhive' )
         );
 
         $settings[] = array(
@@ -3662,8 +3658,6 @@ final class PH_Template_Assistant {
             'id'        => 'admin_list',
             'default'   => ( (isset($custom_field_details['admin_list']) && $custom_field_details['admin_list'] == '1') ? 'yes' : ''),
             'type'      => 'checkbox',
-            'desc_tip'  =>  true,
-            'desc'      => ''
         );
 
         $settings[] = array(
@@ -3671,11 +3665,43 @@ final class PH_Template_Assistant {
             'id'        => 'admin_list_sortable',
             'default'   => ( (isset($custom_field_details['admin_list_sortable']) && $custom_field_details['admin_list_sortable'] == '1') ? 'yes' : ''),
             'type'      => 'checkbox',
-            'desc_tip'  =>  true,
-            'desc'      => ''
         );
 
         $settings[] = array( 'type' => 'sectionend', 'id' => 'customfield');
+
+        $settings[] = array(
+            'type' => 'html',
+            'html' => '<script>
+
+                jQuery(document).ready(function()
+                {
+                    ph_hide_show_type_related_checkboxes();
+
+                    jQuery(\'#meta_box\').change(function()
+                    {
+                        ph_hide_show_type_related_checkboxes();
+                    });
+                });
+
+                function ph_hide_show_type_related_checkboxes()
+                {
+                    var meta_box = jQuery(\'#meta_box\').val();
+
+                    jQuery(\'#row_display_on_website\').hide();
+                    jQuery(\'#row_display_on_user_details\').hide();
+
+                    if ( meta_box.indexOf(\'property_\') != -1 )
+                    {
+                        jQuery(\'#row_display_on_website\').show();
+                    }
+                    if ( meta_box.indexOf(\'contact_\') != -1 )
+                    {
+                        jQuery(\'#row_display_on_user_details\').show();
+                    }
+                }
+
+            </script>'
+        );
 
         return $settings;
     }
