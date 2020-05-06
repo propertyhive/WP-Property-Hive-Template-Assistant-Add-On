@@ -4003,6 +4003,11 @@ final class PH_Template_Assistant {
                     {
                         ph_hide_show_type_related_checkboxes();
                     });
+
+                    jQuery(\'#field_type\').change(function()
+                    {
+                        ph_hide_show_type_related_checkboxes();
+                    });
                 });
 
                 function ph_hide_show_type_related_checkboxes()
@@ -4016,7 +4021,11 @@ final class PH_Template_Assistant {
                     if ( meta_box.indexOf(\'property_\') != -1 )
                     {
                         jQuery(\'#row_display_on_website\').show();
-                        jQuery(\'#row_display_on_applicant_requirements\').show();
+                        
+                        if ( jQuery(\'#field_type\').val() == \'select\' || jQuery(\'#field_type\').val() == \'multiselect\' )
+                        {
+                            jQuery(\'#row_display_on_applicant_requirements\').show();
+                        }
                     }
                     if ( meta_box.indexOf(\'contact_\') != -1 )
                     {
