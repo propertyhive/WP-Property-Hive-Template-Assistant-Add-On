@@ -132,6 +132,12 @@ final class PH_Template_Assistant {
         add_filter( 'manage_edit-sale_sortable_columns', array( $this, 'custom_fields_in_sale_admin_list_sort' ) );
         add_filter( 'request', array( $this, 'custom_fields_in_sale_admin_list_orderby' ) );
 
+        add_action( 'propertyhive_contact_applicant_requirements_details_fields', array( $this, 'add_applicant_requirements_fields' ), 10, 2 );
+        add_action( 'propertyhive_save_contact_applicant_requirements', array( $this, 'save_applicant_requirements_fields' ), 10, 2 );
+        add_filter( 'propertyhive_applicant_requirements_display', array( $this, 'applicant_requirements_display' ), 10, 3 );
+        add_filter( 'propertyhive_matching_properties_args', array( $this, 'matching_properties_args' ), 10, 3 );
+        add_filter( 'propertyhive_matching_applicants_check', array( $this, 'matching_applicants_check' ), 10, 4 );
+
         add_filter( 'propertyhive_room_breakdown_data', array( $this, 'add_custom_fields_to_room_breakdown' ), 10, 3 ); // Applicable when Rooms / Student Accommodation add on active
         
         if ( isset($current_settings['search_result_default_order']) && $current_settings['search_result_default_order'] != '' )
@@ -279,9 +285,13 @@ final class PH_Template_Assistant {
         <select id="<?php echo $custom_field['field_name']; ?>" name="<?php echo $custom_field['field_name']; ?>[]" multiple="multiple" data-placeholder="<?php _e( 'Select ' . $custom_field['field_label'], 'propertyhive' ); ?>" class="multiselect attribute_values">
             <?php
                 $selected_values = get_post_meta( $thepostid, $custom_field['field_name'], true );
-                if ( $selected_values == '' )
+                if ( !is_array($selected_values) && $selected_values == '' )
                 {
                     $selected_values = array();
+                }
+                elseif ( !is_array($selected_values) && $selected_values != '' )
+                {
+                    $selected_values = array($selected_values);
                 }
                 
                 if ( isset($custom_field['dropdown_options']) && is_array($custom_field['dropdown_options']) && !empty($custom_field['dropdown_options']) )
@@ -421,6 +431,306 @@ final class PH_Template_Assistant {
                 }, 99, 2 );
             }
         }
+    }
+
+    public function add_applicant_requirements_fields( $contact_post_id, $applicant_profile_id )
+    {
+        $applicant_profile = get_post_meta( $contact_post_id, '_applicant_profile_' . $applicant_profile_id, TRUE );
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['display_on_applicant_requirements']) && $custom_field['display_on_applicant_requirements'] == '1' && substr($custom_field['meta_box'], 0, 9) == 'property_' )
+                {
+                    switch ( $custom_field['field_type'] )
+                    {
+                        case "select":
+                        {
+                            $options = array('' => '');
+                            foreach ($custom_field['dropdown_options'] as $dropdown_option)
+                            {
+                                $options[$dropdown_option] = ph_clean($dropdown_option);
+                            }
+
+                            propertyhive_wp_select( array( 
+                                'id' => '_applicant' . $custom_field['field_name'] . '_' . $applicant_profile_id, 
+                                'label' => $custom_field['field_label'], 
+                                'desc_tip' => false, 
+                                'custom_attributes' => array(
+                                    'style' => 'width:100%; max-width:150px;'
+                                ),
+                                'value' => ( ( isset($applicant_profile[$custom_field['field_name']]) ) ? $applicant_profile[$custom_field['field_name']] : '' ),
+                                'options' => $options,
+                            ) );
+
+                            break;
+                        }
+                        case "multiselect":
+                        {
+                            $options = array('' => '');
+                            foreach ($custom_field['dropdown_options'] as $dropdown_option)
+                            {
+                                $options[$dropdown_option] = ph_clean($dropdown_option);
+                            }
+?>
+                            <p class="form-field">
+                                <label for="_applicant<?php echo $custom_field['field_name']; ?>_<?php echo $applicant_profile_id; ?>"><?php echo $custom_field['field_label']; ?></label>
+                                <select id="_applicant<?php echo $custom_field['field_name']; ?>_<?php echo $applicant_profile_id; ?>" name="_applicant<?php echo $custom_field['field_name']; ?>_<?php echo $applicant_profile_id; ?>[]" multiple="multiple" data-placeholder="Start typing to add <?php echo esc_attr($custom_field['field_label']); ?>..." class="multiselect attribute_values">
+                                    <?php
+                                        foreach ( $options as $option )
+                                        {
+                                            echo '<option value="' . esc_attr( $option ) . '"';
+                                            if ( 
+                                                isset($applicant_profile[$custom_field['field_name']]) 
+                                            )
+                                            {
+                                                if ( !is_array($applicant_profile[$custom_field['field_name']]) && $applicant_profile[$custom_field['field_name']] != '' )
+                                                {
+                                                    $applicant_profile[$custom_field['field_name']] = array($applicant_profile[$custom_field['field_name']]);
+                                                }
+
+                                                if ( in_array( $option, $applicant_profile[$custom_field['field_name']] ) )
+                                                {
+                                                    echo ' selected';
+                                                }
+                                            }
+                                            echo '>' . esc_html( $option ) . '</option>';
+                                        }
+                                    ?>
+                                </select>
+                            </p>
+<?php
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public function save_applicant_requirements_fields( $contact_post_id, $applicant_profile_id )
+    {
+        $applicant_profile = get_post_meta( $contact_post_id, '_applicant_profile_' . $applicant_profile_id, TRUE );
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['display_on_applicant_requirements']) && $custom_field['display_on_applicant_requirements'] == '1' && substr($custom_field['meta_box'], 0, 9) == 'property_' )
+                {
+                    switch ( $custom_field['field_type'] )
+                    {
+                        case "select":
+                        case "multiselect":
+                        {
+                            if ( isset($_POST['_applicant' . $custom_field['field_name'] . '_' . $applicant_profile_id]) )
+                            {
+                                $applicant_profile[$custom_field['field_name']] = ph_clean($_POST['_applicant' . $custom_field['field_name'] . '_' . $applicant_profile_id]);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        update_post_meta( $contact_post_id, '_applicant_profile_' . $applicant_profile_id, $applicant_profile );
+    }
+
+    public function applicant_requirements_display( $requirements, $contact_post_id, $applicant_profile )
+    {
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['display_on_applicant_requirements']) && $custom_field['display_on_applicant_requirements'] == '1' && substr($custom_field['meta_box'], 0, 9) == 'property_' )
+                {
+                    if ( isset($applicant_profile[$custom_field['field_name']]) )
+                    {
+                        switch ( $custom_field['field_type'] )
+                        {
+                            case "select":
+                            {
+                                if ( $applicant_profile[$custom_field['field_name']] != '' )
+                                {
+                                    $requirements[] = array(
+                                        'label' => $custom_field['field_label'],
+                                        'value' => ph_clean($applicant_profile[$custom_field['field_name']]),
+                                    );
+                                }
+                                break;
+                            }
+                            case "multiselect":
+                            {
+                                if ( !is_array($applicant_profile[$custom_field['field_name']]) && $applicant_profile[$custom_field['field_name']] != '' )
+                                {
+                                    $applicant_profile[$custom_field['field_name']] = array($applicant_profile[$custom_field['field_name']]);
+                                }
+
+                                if ( !empty($applicant_profile[$custom_field['field_name']]) )
+                                {
+                                    $sliced_terms = array_slice( ph_clean($applicant_profile[$custom_field['field_name']]), 0, 2 );
+                                    $requirements[] = array(
+                                        'label' => $custom_field['field_label'],
+                                        'value' => implode(", ", $sliced_terms) . ( (count($applicant_profile[$custom_field['field_name']]) > 2) ? '<span title="' . addslashes( implode(", ", $applicant_profile[$custom_field['field_name']]) ) .'"> + ' . (count($applicant_profile[$custom_field['field_name']]) - 2) . ' more</span>' : '' )
+                                    );
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $requirements;
+    }
+
+    public function matching_properties_args( $args, $contact_post_id, $applicant_profile )
+    {
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['display_on_applicant_requirements']) && $custom_field['display_on_applicant_requirements'] == '1' && substr($custom_field['meta_box'], 0, 9) == 'property_' )
+                {
+                    if ( isset($applicant_profile[$custom_field['field_name']]) )
+                    {
+                        switch ( $custom_field['field_type'] )
+                        {
+                            case "select":
+                            {
+                                if ( $applicant_profile[$custom_field['field_name']] != '' )
+                                {
+                                    $args['meta_query'][] = array(
+                                        'key' => $custom_field['field_name'],
+                                        'value' => $applicant_profile[$custom_field['field_name']],
+                                    );
+                                }
+                                break;
+                            }
+                            case "multiselect":
+                            {
+                                if ( !is_array($applicant_profile[$custom_field['field_name']]) && $applicant_profile[$custom_field['field_name']] != '' )
+                                {
+                                    $applicant_profile[$custom_field['field_name']] = array($applicant_profile[$custom_field['field_name']]);
+                                }
+
+                                if ( !empty($applicant_profile[$custom_field['field_name']]) )
+                                {
+                                    $sub_meta_query = array(
+                                        'relation' => 'OR'
+                                    );
+
+                                    foreach ( $applicant_profile[$custom_field['field_name']] as $option )
+                                    {
+                                        $sub_meta_query[] = array(
+                                            'key' => $custom_field['field_name'],
+                                            'value' => $option,
+                                            'compare' => 'LIKE',
+                                        );
+                                    }
+                                    
+                                    $args['meta_query'][] = $sub_meta_query;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $args;
+    }
+
+    public function matching_applicants_check( $check, $property, $contact_post_id, $applicant_profile )
+    {
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['display_on_applicant_requirements']) && $custom_field['display_on_applicant_requirements'] == '1' && substr($custom_field['meta_box'], 0, 9) == 'property_' )
+                {
+                    if ( isset($applicant_profile[$custom_field['field_name']]) )
+                    {
+                        switch ( $custom_field['field_type'] )
+                        {
+                            case "select":
+                            {
+                                if ( 
+                                    $applicant_profile[$custom_field['field_name']] == '' ||
+                                    $property->{$custom_field['field_name']} == $applicant_profile[$custom_field['field_name']]
+                                )
+                                {
+
+                                }
+                                else
+                                {
+                                    return false;
+                                }
+                                break;
+                            }
+                            case "multiselect":
+                            {
+                                if ( !is_array($applicant_profile[$custom_field['field_name']]) && $applicant_profile[$custom_field['field_name']] != '' )
+                                {
+                                    $applicant_profile[$custom_field['field_name']] = array($applicant_profile[$custom_field['field_name']]);
+                                }
+
+                                if ( empty($applicant_profile[$custom_field['field_name']]) )
+                                {
+
+                                }
+                                else
+                                {
+                                    $property_values = $property->{$custom_field['field_name']};
+                                    if ( empty($property_values) )
+                                    {
+                                        return false;
+                                    }
+
+                                    $applicant_values = $applicant_profile[$custom_field['field_name']];
+
+                                    $value_exists = false;
+
+                                    foreach ( $property_values as $property_value )
+                                    {
+                                        foreach ( $applicant_values as $applicant_value )
+                                        {
+                                            if ( $property_value == $applicant_value )
+                                            {
+                                                $value_exists = true;
+                                            }
+                                        }
+                                    }
+
+                                    if ( !$value_exists )
+                                    {
+                                        return false;
+                                    }
+                                }
+
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $check;
     }
 
     public function add_custom_fields_to_room_breakdown( $room_data, $post_id, $room )
