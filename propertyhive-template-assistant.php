@@ -137,6 +137,9 @@ final class PH_Template_Assistant {
         add_filter( 'propertyhive_applicant_requirements_display', array( $this, 'applicant_requirements_display' ), 10, 3 );
         add_filter( 'propertyhive_matching_properties_args', array( $this, 'matching_properties_args' ), 10, 3 );
         add_filter( 'propertyhive_matching_applicants_check', array( $this, 'matching_applicants_check' ), 10, 4 );
+        add_filter( 'propertyhive_applicant_requirements_form_fields', array( $this, 'applicant_requirements_form_fields' ), 10, 1 );
+        add_action( 'propertyhive_applicant_registered', array( $this, 'applicant_registered' ), 10, 2 );
+        add_action( 'propertyhive_account_requirements_updated', array( $this, 'applicant_registered' ), 10, 2 );
 
         add_filter( 'propertyhive_room_breakdown_data', array( $this, 'add_custom_fields_to_room_breakdown' ), 10, 3 ); // Applicable when Rooms / Student Accommodation add on active
         
@@ -731,6 +734,109 @@ final class PH_Template_Assistant {
         }
 
         return $check;
+    }
+
+    public function applicant_requirements_form_fields( $form_controls )
+    {
+        $applicant_profile = array();
+        if ( is_user_logged_in() )
+        {
+            $current_user = wp_get_current_user();
+            $applicant_profile = false;
+
+            if ( $current_user instanceof WP_User )
+            {
+                $contact = new PH_Contact( '', $current_user->ID );
+
+                if ( is_array($contact->contact_types) && in_array('applicant', $contact->contact_types) )
+                {
+                    if (
+                        $contact->applicant_profiles != '' &&
+                        $contact->applicant_profiles > 0 &&
+                        $contact->applicant_profile_0 != '' &&
+                        is_array($contact->applicant_profile_0)
+                    )
+                    {
+                        $applicant_profile = $contact->applicant_profile_0;
+                    }
+                }
+            }
+        }
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['display_on_applicant_requirements']) && $custom_field['display_on_applicant_requirements'] == '1' && substr($custom_field['meta_box'], 0, 9) == 'property_' )
+                {
+                    switch ( $custom_field['field_type'] )
+                    {
+                        case "select":
+                        case "multiselect":
+                        {
+                            $options = array('' => '');
+                            foreach ($custom_field['dropdown_options'] as $dropdown_option)
+                            {
+                                $options[$dropdown_option] = ph_clean($dropdown_option);
+                            }
+
+                            $value = isset($applicant_profile[$custom_field['field_name']]) ? $applicant_profile[$custom_field['field_name']] : '';
+                            if ( is_array($value) && !empty($value) )
+                            {
+                                $value = $value[0];
+                            }
+
+                            $form_controls[$custom_field['field_name']] = array(
+                                'type' => 'select',
+                                'label' => $custom_field['field_label'],
+                                'required' => false,
+                                'show_label' => true,
+                                'value' => $value,
+                                'options' => $options
+                            );
+
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $form_controls;
+    }
+
+    public function applicant_registered( $contact_post_id, $user_id )
+    {
+        $applicant_profile = get_post_meta( $contact_post_id, '_applicant_profile_0', TRUE );
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['display_on_applicant_requirements']) && $custom_field['display_on_applicant_requirements'] == '1' && substr($custom_field['meta_box'], 0, 9) == 'property_' )
+                {
+                    switch ( $custom_field['field_type'] )
+                    {
+                        case "select":
+                        {
+                            $applicant_profile[$custom_field['field_name']] = isset($_POST[$custom_field['field_name']]) ? ph_clean($_POST[$custom_field['field_name']]) : '';
+                            break;
+                        }
+                        case "multiselect":
+                        {
+                            $applicant_profile[$custom_field['field_name']] = isset($_POST[$custom_field['field_name']]) ? array($_POST[$custom_field['field_name']]) : array();
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        update_post_meta( $contact_post_id, '_applicant_profile_0', $applicant_profile );
     }
 
     public function add_custom_fields_to_room_breakdown( $room_data, $post_id, $room )
