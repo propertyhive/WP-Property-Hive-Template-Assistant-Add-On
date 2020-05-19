@@ -2453,6 +2453,18 @@ final class PH_Template_Assistant {
                                 {
                                     $active_fields[$field_id]['placeholder'] = stripslashes($_POST['placeholder'][$field_id]);
                                 }
+                                if ( isset($_POST['min'][$field_id]) && $_POST['min'][$field_id] != '' )
+                                {
+                                    $active_fields[$field_id]['min'] = stripslashes($_POST['min'][$field_id]);
+                                }
+                                if ( isset($_POST['max'][$field_id]) && $_POST['max'][$field_id] != '' )
+                                {
+                                    $active_fields[$field_id]['max'] = stripslashes($_POST['max'][$field_id]);
+                                }
+                                if ( isset($_POST['step'][$field_id]) && $_POST['step'][$field_id] != '' )
+                                {
+                                    $active_fields[$field_id]['step'] = stripslashes($_POST['step'][$field_id]);
+                                }
                                 if ( isset($_POST['blank_option'][$field_id]) && $_POST['blank_option'][$field_id] != '' )
                                 {
                                     $active_fields[$field_id]['blank_option'] = stripslashes($_POST['blank_option'][$field_id]);
@@ -3277,6 +3289,21 @@ final class PH_Template_Assistant {
             ';
         }
 
+        if ( isset($field['type']) && in_array($field['type'], array('slider')) )
+        {
+            echo '
+            <p><label for="min_'.$id.'">Min:</label> <input type="number" name="min[' . $id . ']" id="min_'.$id.'" value="' . ( ( isset($field['min']) ) ? htmlentities($field['min']) : '0' ) . '"></p>
+            ';
+
+            echo '
+            <p><label for="max_'.$id.'">Max:</label> <input type="number" name="max[' . $id . ']" id="max_'.$id.'" value="' . ( ( isset($field['max']) ) ? htmlentities($field['max']) : '' ) . '"></p>
+            ';
+
+            echo '
+            <p><label for="step_'.$id.'">Step:</label> <input type="number" name="step[' . $id . ']" id="step_'.$id.'" value="' . ( ( isset($field['step']) ) ? htmlentities($field['step']) : '1' ) . '"></p>
+            ';
+        }
+
         if ( taxonomy_exists($id) || ( isset($field['custom_field']) && $field['custom_field'] === true && $field['type'] == 'select' ) )
         {
             echo '
@@ -3504,6 +3531,16 @@ final class PH_Template_Assistant {
             'options' => $price_ranges
         );
 
+        $all_fields['price_slider'] = array(
+            'type' => 'slider',
+            'label' => __( 'Price', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-price-slider sales-only">',
+            'min' => '0',
+            'max' => '1000000',
+            'step' => '10000',
+        );
+
         $rent_ranges = array(
             '' => __( 'No preference', 'propertyhive' ),
             '100-200' => '£100 - £200 PCM',
@@ -3520,6 +3557,16 @@ final class PH_Template_Assistant {
             'show_label' => true,
             'before' => '<div class="control control-rent-range lettings-only">',
             'options' => $rent_ranges
+        );
+
+        $all_fields['rent_slider'] = array(
+            'type' => 'slider',
+            'label' => __( 'Rent', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-rent-slider lettings-only">',
+            'min' => '0',
+            'max' => '1000',
+            'step' => '100',
         );
 
         $bedrooms = array(
@@ -3568,6 +3615,14 @@ final class PH_Template_Assistant {
             'show_label' => true,
             'before' => '<div class="control control-maximum_bathrooms residential-only">',
             'options' => $bathrooms
+        );
+        $all_fields['bedrooms_slider'] = array(
+            'type' => 'slider',
+            'label' => __( 'Bedrooms', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-bedrooms-slider residential-only">',
+            'min' => '0',
+            'max' => '10',
         );
         $all_fields['available_date_from'] = array(
             'type' => 'date',
