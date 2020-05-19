@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=N68UH
 Requires at least: 3.8
 Tested up to: 5.4.1
 Stable tag: trunk
-Version: 1.0.33
+Version: 1.0.34
 Homepage: http://wp-property-hive.com/addons/template-assistant/
 
 This add on for Property Hive assists with the layout of property pages and more.
@@ -27,6 +27,9 @@ Once installed and activated, you can access the settings for this add on by nav
 Updating should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 1.0.34 =
+* Added new price, rent and bedroom slider fields as options when building search forms
 
 = 1.0.33 =
 * Added ability to specify property custom field as match field on applicants. This field will appear on property, applicant requirements, and impact properties returned in matches
