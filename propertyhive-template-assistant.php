@@ -132,6 +132,9 @@ final class PH_Template_Assistant {
         add_filter( 'manage_edit-sale_sortable_columns', array( $this, 'custom_fields_in_sale_admin_list_sort' ) );
         add_filter( 'request', array( $this, 'custom_fields_in_sale_admin_list_orderby' ) );
 
+        add_action( 'propertyhive_office_table_header_columns', array( $this, 'add_office_additional_field_table_header_column' ), 10 );
+        add_action( 'propertyhive_office_table_row_columns', array( $this, 'add_office_additional_field_table_row_column' ), 10 );
+
         add_action( 'propertyhive_contact_applicant_requirements_details_fields', array( $this, 'add_applicant_requirements_fields' ), 10, 2 );
         add_action( 'propertyhive_save_contact_applicant_requirements', array( $this, 'save_applicant_requirements_fields' ), 10, 2 );
         add_filter( 'propertyhive_applicant_requirements_display', array( $this, 'applicant_requirements_display' ), 10, 3 );
@@ -247,131 +250,201 @@ final class PH_Template_Assistant {
         if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
         {
             $meta_boxes_done = array();
+            $office_details_fields_exist = false;
+            $offices_opening_section_done = false;
             foreach ( $current_settings['custom_fields'] as $custom_field )
             {
                 if ( !in_array( $custom_field['meta_box'], $meta_boxes_done ) )
                 {
-                    add_filter( 'propertyhive_' . $custom_field['meta_box'] . '_fields', function()
+                    if ( substr( $custom_field['meta_box'], 0, 6 ) == 'office' )
                     {
-                        global $thepostid;
-
-                        $meta_box_being_done = str_replace( "propertyhive_", "", current_filter() );
-                        $meta_box_being_done = str_replace( "_fields", "", $meta_box_being_done );
-
-                        $current_settings = get_option( 'propertyhive_template_assistant', array() );
-
-                        foreach ( $current_settings['custom_fields'] as $custom_field )
+                        add_filter( 'propertyhive_' . $custom_field['meta_box'] . '_settings', function( $settings )
                         {
-                            if ( $custom_field['meta_box'] == $meta_box_being_done )
-                            {
-                                if ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'select' )
-                                {
-                                    $options = array('' => '');
-                                    if ( isset($custom_field['dropdown_options']) && is_array($custom_field['dropdown_options']) && !empty($custom_field['dropdown_options']) )
-                                    {
-                                        foreach ( $custom_field['dropdown_options'] as $dropdown_option )
-                                        {
-                                            $options[$dropdown_option] = $dropdown_option;
-                                        }
-                                    }
-                                    propertyhive_wp_select( apply_filters( 'propertyhive_template_assistant_custom_field_args_' . ltrim($custom_field['field_name'], '_'), array( 
-                                        'id' => $custom_field['field_name'], 
-                                        'label' => $custom_field['field_label'], 
-                                        'desc_tip' => false,
-                                        'options' => $options
-                                    ), $thepostid ) );
-                                }
-                                elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'multiselect' )
-                                {
-?>
-<p class="form-field <?php echo $custom_field['field_name']; ?>_field"><label for="<?php echo $custom_field['field_name']; ?>"><?php _e( $custom_field['field_label'], 'propertyhive' ); ?></label>
-        <select id="<?php echo $custom_field['field_name']; ?>" name="<?php echo $custom_field['field_name']; ?>[]" multiple="multiple" data-placeholder="<?php _e( 'Select ' . $custom_field['field_label'], 'propertyhive' ); ?>" class="multiselect attribute_values">
-            <?php
-                $selected_values = get_post_meta( $thepostid, $custom_field['field_name'], true );
-                if ( !is_array($selected_values) && $selected_values == '' )
-                {
-                    $selected_values = array();
-                }
-                elseif ( !is_array($selected_values) && $selected_values != '' )
-                {
-                    $selected_values = array($selected_values);
-                }
-                
-                if ( isset($custom_field['dropdown_options']) && is_array($custom_field['dropdown_options']) && !empty($custom_field['dropdown_options']) )
-                {
-                    foreach ( $custom_field['dropdown_options'] as $dropdown_option )
-                    {
-                        echo '<option value="' . esc_attr( $dropdown_option ) . '"';
-                        if ( in_array( $dropdown_option, $selected_values ) )
-                        {
-                            echo ' selected';
-                        }
-                        echo '>' . esc_html( $dropdown_option ) . '</option>';
-                    }
-                }
-            ?>
-        </select>
-<?php
-                                }
-                                elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'textarea' )
-                                {
-                                    propertyhive_wp_textarea_input( apply_filters( 'propertyhive_template_assistant_custom_field_args_' . ltrim($custom_field['field_name'], '_'), array( 
-                                        'id' => $custom_field['field_name'], 
-                                        'label' => $custom_field['field_label'], 
-                                        'desc_tip' => false,
-                                        'type' => 'text'
-                                    ), $thepostid ) );
-                                }
-                                elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'date' )
-                                {
-                                    propertyhive_wp_text_input( apply_filters( 'propertyhive_template_assistant_custom_field_args_' . ltrim($custom_field['field_name'], '_'), array( 
-                                        'id' => $custom_field['field_name'], 
-                                        'label' => $custom_field['field_label'], 
-                                        'desc_tip' => false,
-                                        'type' => 'text',
-                                        'class' => 'short date-picker',
-                                        'placeholder' => 'YYYY-MM-DD',
-                                        'custom_attributes' => array(
-                                            'maxlength' => 10,
-                                            'pattern' => "[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])"
-                                        )
-                                    ), $thepostid ) );
-                                }
-                                else
-                                {
-                                    propertyhive_wp_text_input( apply_filters( 'propertyhive_template_assistant_custom_field_args_' . ltrim($custom_field['field_name'], '_'), array( 
-                                        'id' => $custom_field['field_name'], 
-                                        'label' => $custom_field['field_label'], 
-                                        'desc_tip' => false,
-                                        'type' => 'text'
-                                    ), $thepostid ) );
-                                }
-                            }
-                        }
-                    });
+                            $current_id = empty( $_REQUEST['id'] ) ? '' : (int)$_REQUEST['id'];
 
-                    add_action( 'propertyhive_save_' . $custom_field['meta_box'],  function( $post_id )
-                    {
-                        $meta_box_being_done = str_replace( "propertyhive_save_", "", current_filter() );
+                            $meta_box_being_done = str_replace( "propertyhive_", "", current_filter() );
+                            $meta_box_being_done = str_replace( "_settings", "", $meta_box_being_done );
 
-                        $current_settings = get_option( 'propertyhive_template_assistant', array() );
-
-                        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
-                        {
-                            $current_settings['custom_fields'] = apply_filters( 'propertyhive_template_assistant_custom_fields_to_save', $current_settings['custom_fields'] );
+                            $current_settings = get_option( 'propertyhive_template_assistant', array() );
 
                             foreach ( $current_settings['custom_fields'] as $custom_field )
                             {
                                 if ( $custom_field['meta_box'] == $meta_box_being_done )
                                 {
-                                    update_post_meta( $post_id, $custom_field['field_name'], (isset($_POST[$custom_field['field_name']]) ? $_POST[$custom_field['field_name']] : '') );
+                                    if ( !$offices_opening_section_done )
+                                    {
+                                        $settings[] = array( 'title' => __( 'Additional Fields', 'propertyhive' ), 'type' => 'title', 'desc' => '', 'id' => 'office_template_assistant_additional_field' );
+                                    }
+
+                                    $settings[] = array(
+                                        'title'     => $custom_field['field_label'],
+                                        'id'        => $custom_field['field_name'],
+                                        'default'   => get_post_meta($current_id, $custom_field['field_name'], TRUE),
+                                        'type'      => 'text',
+                                        'desc_tip'  =>  false,
+                                    );
                                 }
                             }
+
+                            return $settings;
+                        });
+
+                        $office_details_fields_exist = true;
+
+                        add_action( 'propertyhive_save_office', function( $post_id )
+                        {
+                            $meta_box_being_done = 'office_details';
+
+                            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+                            if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+                            {
+                                $current_settings['custom_fields'] = apply_filters( 'propertyhive_template_assistant_custom_fields_to_save', $current_settings['custom_fields'] );
+
+                                foreach ( $current_settings['custom_fields'] as $custom_field )
+                                {
+                                    if ( $custom_field['meta_box'] == $meta_box_being_done )
+                                    {
+                                        update_post_meta( $post_id, $custom_field['field_name'], (isset($_POST[$custom_field['field_name']]) ? $_POST[$custom_field['field_name']] : '') );
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    else
+                    {
+                        add_action( 'propertyhive_' . $custom_field['meta_box'] . '_fields', function()
+                        {
+                            global $thepostid;
+
+                            $meta_box_being_done = str_replace( "propertyhive_", "", current_filter() );
+                            $meta_box_being_done = str_replace( "_fields", "", $meta_box_being_done );
+
+                            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+                            foreach ( $current_settings['custom_fields'] as $custom_field )
+                            {
+                                if ( $custom_field['meta_box'] == $meta_box_being_done )
+                                {
+                                    if ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'select' )
+                                    {
+                                        $options = array('' => '');
+                                        if ( isset($custom_field['dropdown_options']) && is_array($custom_field['dropdown_options']) && !empty($custom_field['dropdown_options']) )
+                                        {
+                                            foreach ( $custom_field['dropdown_options'] as $dropdown_option )
+                                            {
+                                                $options[$dropdown_option] = $dropdown_option;
+                                            }
+                                        }
+                                        propertyhive_wp_select( apply_filters( 'propertyhive_template_assistant_custom_field_args_' . ltrim($custom_field['field_name'], '_'), array( 
+                                            'id' => $custom_field['field_name'], 
+                                            'label' => $custom_field['field_label'], 
+                                            'desc_tip' => false,
+                                            'options' => $options
+                                        ), $thepostid ) );
+                                    }
+                                    elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'multiselect' )
+                                    {
+    ?>
+    <p class="form-field <?php echo $custom_field['field_name']; ?>_field"><label for="<?php echo $custom_field['field_name']; ?>"><?php _e( $custom_field['field_label'], 'propertyhive' ); ?></label>
+            <select id="<?php echo $custom_field['field_name']; ?>" name="<?php echo $custom_field['field_name']; ?>[]" multiple="multiple" data-placeholder="<?php _e( 'Select ' . $custom_field['field_label'], 'propertyhive' ); ?>" class="multiselect attribute_values">
+                <?php
+                    $selected_values = get_post_meta( $thepostid, $custom_field['field_name'], true );
+                    if ( !is_array($selected_values) && $selected_values == '' )
+                    {
+                        $selected_values = array();
+                    }
+                    elseif ( !is_array($selected_values) && $selected_values != '' )
+                    {
+                        $selected_values = array($selected_values);
+                    }
+                    
+                    if ( isset($custom_field['dropdown_options']) && is_array($custom_field['dropdown_options']) && !empty($custom_field['dropdown_options']) )
+                    {
+                        foreach ( $custom_field['dropdown_options'] as $dropdown_option )
+                        {
+                            echo '<option value="' . esc_attr( $dropdown_option ) . '"';
+                            if ( in_array( $dropdown_option, $selected_values ) )
+                            {
+                                echo ' selected';
+                            }
+                            echo '>' . esc_html( $dropdown_option ) . '</option>';
                         }
-                    });
+                    }
+                ?>
+            </select>
+    <?php
+                                    }
+                                    elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'textarea' )
+                                    {
+                                        propertyhive_wp_textarea_input( apply_filters( 'propertyhive_template_assistant_custom_field_args_' . ltrim($custom_field['field_name'], '_'), array( 
+                                            'id' => $custom_field['field_name'], 
+                                            'label' => $custom_field['field_label'], 
+                                            'desc_tip' => false,
+                                            'type' => 'text'
+                                        ), $thepostid ) );
+                                    }
+                                    elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'date' )
+                                    {
+                                        propertyhive_wp_text_input( apply_filters( 'propertyhive_template_assistant_custom_field_args_' . ltrim($custom_field['field_name'], '_'), array( 
+                                            'id' => $custom_field['field_name'], 
+                                            'label' => $custom_field['field_label'], 
+                                            'desc_tip' => false,
+                                            'type' => 'text',
+                                            'class' => 'short date-picker',
+                                            'placeholder' => 'YYYY-MM-DD',
+                                            'custom_attributes' => array(
+                                                'maxlength' => 10,
+                                                'pattern' => "[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])"
+                                            )
+                                        ), $thepostid ) );
+                                    }
+                                    else
+                                    {
+                                        propertyhive_wp_text_input( apply_filters( 'propertyhive_template_assistant_custom_field_args_' . ltrim($custom_field['field_name'], '_'), array( 
+                                            'id' => $custom_field['field_name'], 
+                                            'label' => $custom_field['field_label'], 
+                                            'desc_tip' => false,
+                                            'type' => 'text'
+                                        ), $thepostid ) );
+                                    }
+                                }
+                            }
+                        });
+
+                        add_action( 'propertyhive_save_' . $custom_field['meta_box'],  function( $post_id )
+                        {
+                            $meta_box_being_done = str_replace( "propertyhive_save_", "", current_filter() );
+
+                            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+                            if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+                            {
+                                $current_settings['custom_fields'] = apply_filters( 'propertyhive_template_assistant_custom_fields_to_save', $current_settings['custom_fields'] );
+
+                                foreach ( $current_settings['custom_fields'] as $custom_field )
+                                {
+                                    if ( $custom_field['meta_box'] == $meta_box_being_done )
+                                    {
+                                        update_post_meta( $post_id, $custom_field['field_name'], (isset($_POST[$custom_field['field_name']]) ? $_POST[$custom_field['field_name']] : '') );
+                                    }
+                                }
+                            }
+                        });
+                    }
 
                     $meta_boxes_done[] = $custom_field['meta_box'];
                 }
+            }
+
+            if ( $office_details_fields_exist  )
+            {
+                add_filter( 'propertyhive_' . $custom_field['meta_box'] . '_settings', function( $settings )
+                {
+                    $settings[] = array( 'type' => 'sectionend', 'id' => 'office_location_options' );
+
+                    return $settings;
+                });
             }
 
             $shortcodes = array(
@@ -432,6 +505,38 @@ final class PH_Template_Assistant {
                     }
                     return $args;
                 }, 99, 2 );
+            }
+        }
+    }
+
+    public function add_office_additional_field_table_header_column()
+    {
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && substr($custom_field['meta_box'], 0, 6) == 'office' )
+                {
+                    echo '<th>' . $custom_field['field_label'] . '</th>';
+                }
+            }
+        }
+    }
+
+    public function add_office_additional_field_table_row_column( $office_id )
+    {
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && substr($custom_field['meta_box'], 0, 6) == 'office' )
+                {
+                    echo '<td>' . get_post_meta( $office_id, $custom_field['field_name'], TRUE ) . '</td>';
+                }
             }
         }
     }
@@ -4100,6 +4205,8 @@ final class PH_Template_Assistant {
             $options['offer_details'] = __( 'Offer Details', 'propertyhive' );
             $options['sale_details'] = __( 'Sale Details', 'propertyhive' );
         }
+
+        $options['office_details'] = __( 'Office Details', 'propertyhive' );
 
         $options = apply_filters( 'propertyhive_template_assistant_custom_field_sections', $options );
 
