@@ -85,6 +85,13 @@ final class PH_Template_Assistant {
 
         add_action( 'propertyhive_update_options_general', array( $this, 'reflect_updated_departments_in_search_forms' ) );
 
+        $tags_sections = array( 'property', 'applicant', 'owner', 'contact', 'appraisal', 'viewing', 'offer', 'sale', 'negotiator', 'general' );
+
+        foreach ( $tags_sections as $tags_section ) {
+            add_filter( 'propertyhive_document_' . $tags_section . '_merge_tags', array( $this, 'document_' . $tags_section . '_custom_fields_merge_tags' ), 10, 2 );
+            add_filter( 'propertyhive_document_' . $tags_section . '_merge_values', array( $this, 'document_' . $tags_section . '_custom_fields_merge_values' ), 10, 2 );
+        }
+
         // Set columns
         add_filter( 'loop_search_results_per_page',  array( $this, 'template_assistant_loop_search_results_per_page' ) );
         add_filter( 'loop_search_results_columns', array( $this, 'template_assistant_search_result_columns' ) );
@@ -1951,6 +1958,146 @@ final class PH_Template_Assistant {
         }
 
         update_option( 'propertyhive_template_assistant', $current_settings );
+    }
+
+    private function document_custom_fields_merge_tags($merge_tags, $post_id, $post_type)
+    {
+        // Add additional custom field names to tags array
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                // Only add fields that are related to the current section of the merge
+                if ( substr($custom_field['meta_box'], 0, strlen($post_type)+1) === $post_type . '_' ) {
+                    // Add field name twice to cater for tag with and without preceding underscore
+                    $merge_tags[] = $custom_field['field_name'];
+                    $merge_tags[] = ltrim( $custom_field['field_name'], '_' );
+                }
+            }
+        }
+        return $merge_tags;
+    }
+
+    public function document_property_custom_fields_merge_tags($merge_tags, $post_id)
+    {
+        return $this->document_custom_fields_merge_tags($merge_tags, $post_id, 'property');
+    }
+
+    public function document_applicant_custom_fields_merge_tags($merge_tags, $post_id)
+    {
+        return $this->document_custom_fields_merge_tags($merge_tags, $post_id, 'applicant');
+    }
+
+    public function document_owner_custom_fields_merge_tags($merge_tags, $post_id)
+    {
+        return $this->document_custom_fields_merge_tags($merge_tags, $post_id, 'owner');
+    }
+
+    public function document_contact_custom_fields_merge_tags($merge_tags, $post_id)
+    {
+        return $this->document_custom_fields_merge_tags($merge_tags, $post_id, 'contact');
+    }
+
+    public function document_appraisal_custom_fields_merge_tags($merge_tags, $post_id)
+    {
+        return $this->document_custom_fields_merge_tags($merge_tags, $post_id, 'appraisal');
+    }
+
+    public function document_viewing_custom_fields_merge_tags($merge_tags, $post_id)
+    {
+        return $this->document_custom_fields_merge_tags($merge_tags, $post_id, 'viewing');
+    }
+
+    public function document_offer_custom_fields_merge_tags($merge_tags, $post_id)
+    {
+        return $this->document_custom_fields_merge_tags($merge_tags, $post_id, 'offer');
+    }
+
+    public function document_sale_custom_fields_merge_tags($merge_tags, $post_id)
+    {
+        return $this->document_custom_fields_merge_tags($merge_tags, $post_id, 'sale');
+    }
+
+    public function document_negotiator_custom_fields_merge_tags($merge_tags, $post_id)
+    {
+        return $this->document_custom_fields_merge_tags($merge_tags, $post_id, 'negotiator');
+    }
+
+    public function document_general_custom_fields_merge_tags($merge_tags, $post_id)
+    {
+        return $this->document_custom_fields_merge_tags($merge_tags, $post_id, 'general');
+    }
+
+    private function document_custom_fields_merge_values($merge_values, $post_id, $post_type)
+    {
+        // Add additional custom fields values to tags values array
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                // Only add fields that are related to the current section of the merge
+                if ( substr($custom_field['meta_box'], 0, strlen($post_type)+1) === $post_type . '_' ) {
+                    // Add value twice to cater for tag with and without preceding underscore
+                    $merge_values[] = get_post_meta( $post_id, $custom_field['field_name'], TRUE );
+                    $merge_values[] = get_post_meta( $post_id, $custom_field['field_name'], TRUE );
+                }
+            }
+        }
+        return $merge_values;
+    }
+
+    public function document_property_custom_fields_merge_values($merge_values, $post_id)
+    {
+        return $this->document_custom_fields_merge_values($merge_values, $post_id, 'property');
+    }
+
+    public function document_applicant_custom_fields_merge_values($merge_values, $post_id)
+    {
+        return $this->document_custom_fields_merge_values($merge_values, $post_id, 'applicant');
+    }
+
+    public function document_owner_custom_fields_merge_values($merge_values, $post_id)
+    {
+        return $this->document_custom_fields_merge_values($merge_values, $post_id, 'owner');
+    }
+
+    public function document_contact_custom_fields_merge_values($merge_values, $post_id)
+    {
+        return $this->document_custom_fields_merge_values($merge_values, $post_id, 'contact');
+    }
+
+    public function document_appraisal_custom_fields_merge_values($merge_values, $post_id)
+    {
+        return $this->document_custom_fields_merge_values($merge_values, $post_id, 'appraisal');
+    }
+
+    public function document_viewing_custom_fields_merge_values($merge_values, $post_id)
+    {
+        return $this->document_custom_fields_merge_values($merge_values, $post_id, 'viewing');
+    }
+
+    public function document_offer_custom_fields_merge_values($merge_values, $post_id)
+    {
+        return $this->document_custom_fields_merge_values($merge_values, $post_id, 'offer');
+    }
+
+    public function document_sale_custom_fields_merge_values($merge_values, $post_id)
+    {
+        return $this->document_custom_fields_merge_values($merge_values, $post_id, 'sale');
+    }
+
+    public function document_negotiator_custom_fields_merge_values($merge_values, $post_id)
+    {
+        return $this->document_custom_fields_merge_values($merge_values, $post_id, 'negotiator');
+    }
+
+    public function document_general_custom_fields_merge_values($merge_values, $post_id)
+    {
+        return $this->document_custom_fields_merge_values($merge_values, $post_id, 'general');
     }
 
     public function custom_fields_in_meta_query( $meta_query )
