@@ -281,15 +281,33 @@ final class PH_Template_Assistant {
                                     if ( !$offices_opening_section_done )
                                     {
                                         $settings[] = array( 'title' => __( 'Additional Fields', 'propertyhive' ), 'type' => 'title', 'desc' => '', 'id' => 'office_template_assistant_additional_field' );
+                                        $offices_opening_section_done = true;
                                     }
 
-                                    $settings[] = array(
-                                        'title'     => $custom_field['field_label'],
-                                        'id'        => $custom_field['field_name'],
-                                        'default'   => get_post_meta($current_id, $custom_field['field_name'], TRUE),
-                                        'type'      => 'text',
-                                        'desc_tip'  =>  false,
-                                    );
+                                    switch ( $custom_field['field_type'] )
+                                    {
+                                        case "image":
+                                        {
+                                            $settings[] = array(
+                                                'title'     => $custom_field['field_label'],
+                                                'id'        => $custom_field['field_name'],
+                                                'default'   => get_post_meta($current_id, $custom_field['field_name'], TRUE),
+                                                'type'      => $custom_field['field_type'],
+                                                'desc_tip'  =>  false,
+                                            );
+                                            break;
+                                        }
+                                        default:
+                                        {
+                                            $settings[] = array(
+                                                'title'     => $custom_field['field_label'],
+                                                'id'        => $custom_field['field_name'],
+                                                'default'   => get_post_meta($current_id, $custom_field['field_name'], TRUE),
+                                                'type'      => 'text',
+                                                'desc_tip'  =>  false,
+                                            );
+                                        }
+                                    }
                                 }
                             }
 
@@ -404,6 +422,15 @@ final class PH_Template_Assistant {
                                                 'maxlength' => 10,
                                                 'pattern' => "[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])"
                                             )
+                                        ), $thepostid ) );
+                                    }
+                                    elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'image' )
+                                    {
+                                        propertyhive_wp_photo_upload( apply_filters( 'propertyhive_template_assistant_custom_field_args_' . ltrim($custom_field['field_name'], '_'), array( 
+                                            'id' => $custom_field['field_name'], 
+                                            'label' => $custom_field['field_label'], 
+                                            'desc_tip' => false,
+                                            'button_label' => __( 'Select Image', 'propertyhive' )
                                         ), $thepostid ) );
                                     }
                                     else
@@ -542,7 +569,32 @@ final class PH_Template_Assistant {
             {
                 if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && substr($custom_field['meta_box'], 0, 6) == 'office' )
                 {
-                    echo '<td>' . get_post_meta( $office_id, $custom_field['field_name'], TRUE ) . '</td>';
+                    echo '<td>';
+                    switch ( $custom_field['field_type'] )
+                    {
+                        case "image":
+                        {   
+                            $image_id = get_post_meta( $office_id, $custom_field['field_name'], TRUE );
+                            if ( $image_id != '' )
+                            {
+                                $image = wp_get_attachment_image_src( $image_id, 'thumbnail' );
+                                if ($image !== FALSE)
+                                {
+                                    echo '<img src="' . $image[0] . '" width="150" alt="">';
+                                }
+                                else
+                                {
+                                    echo 'Image doesn\'t exist';
+                                }
+                            }
+                            break;
+                        }
+                        default:
+                        {
+                            echo get_post_meta( $office_id, $custom_field['field_name'], TRUE );
+                        }
+                    }
+                    echo '</td>';
                 }
             }
         }
@@ -1200,6 +1252,22 @@ final class PH_Template_Assistant {
                         elseif ( $custom_field['field_type'] == 'date' )
                         {
                             echo date(get_option( 'date_format' ), strtotime($the_property->{$custom_field['field_name']}));
+                        }
+                        elseif ( $custom_field['field_type'] == 'image' )
+                        {
+                            $image_id = $the_property->{$custom_field['field_name']};
+                            if ( $image_id != '' )
+                            {
+                                $image = wp_get_attachment_image_src( $image_id, 'thumbnail' );
+                                if ($image !== FALSE)
+                                {
+                                    echo '<img src="' . $image[0] . '" width="150" alt="">';
+                                }
+                                else
+                                {
+                                    echo 'Image doesn\'t exist';
+                                }
+                            }
                         }
                         else
                         {
@@ -4291,6 +4359,7 @@ final class PH_Template_Assistant {
                 'select' => 'Dropdown',
                 'multiselect' => 'Multi-Select',
                 'date' => 'Date',
+                'image' => 'Image',
             )
         );
 
