@@ -1126,6 +1126,7 @@ final class PH_Template_Assistant {
                 $custom_field = substr($search_result_field, 12);
 
                 $value = $property->{$custom_field};
+                $value = is_array($value) ? implode(", ", $value) : $value;
 
                 if ( $value != '' )
                 {
