@@ -30,6 +30,7 @@ Updating should work like a charm; as always though, ensure you backup your site
 
 = 1.0.36 =
 * Allow additional fields of type select and multiselect to be multiselect fields when added to search forms
+* Corrected issue with multiselect custom fields being shown on search results
 
 = 1.0.35 =
 * Added ability to add additional fields of type 'Image'
