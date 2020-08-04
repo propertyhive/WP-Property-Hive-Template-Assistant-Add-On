@@ -2181,11 +2181,27 @@ final class PH_Template_Assistant {
                     isset( $_REQUEST[$custom_field['field_name']] ) && $_REQUEST[$custom_field['field_name']] != '' 
                 )
                 {
-                    if ( $custom_field['field_type'] == 'select' )
+                    if ( 
+                        ( $custom_field['field_type'] == 'select' || $custom_field['field_type'] == 'multiselect' ) &&
+                        is_array($_REQUEST[$custom_field['field_name']])
+                    )
+                    {
+                        $sub_meta_query = array('relation' => 'OR');
+                        foreach ( $_REQUEST[$custom_field['field_name']] as $value )
+                        {
+                            $sub_meta_query[] = array(
+                                'key'     => $custom_field['field_name'],
+                                'value'   => ph_clean( $value ),
+                                'compare' => 'LIKE',
+                            );
+                        }
+                        $meta_query[] = $sub_meta_query;
+                    }
+                    elseif ( $custom_field['field_type'] == 'select' )
                     {
                         $meta_query[] = array(
                             'key'     => $custom_field['field_name'],
-                            'value'   => sanitize_text_field( $_REQUEST[$custom_field['field_name']] ),
+                            'value'   => ph_clean( $_REQUEST[$custom_field['field_name']] ),
                             'compare' => '=',
                         );
                     }
@@ -2193,7 +2209,7 @@ final class PH_Template_Assistant {
                     {
                         $meta_query[] = array(
                             'key'     => $custom_field['field_name'],
-                            'value'   => sanitize_text_field( $_REQUEST[$custom_field['field_name']] ),
+                            'value'   => ph_clean( $_REQUEST[$custom_field['field_name']] ),
                             'compare' => 'LIKE',
                         );
                     }
@@ -3636,11 +3652,11 @@ final class PH_Template_Assistant {
                 echo '
                 <p><label for="parent_terms_only_'.$id.'">Top-Level Terms Only:</label> <input type="checkbox" name="parent_terms_only[' . $id . ']" id="parent_terms_only_'.$id.'" value="yes"' . ( ( isset($field['parent_terms_only']) && $field['parent_terms_only'] === true ) ? ' checked' : '' ) . '></p>
                 ';
-
-                echo '
-                <p><label for="multiselect_'.$id.'">Multi-Select:</label> <input type="checkbox" name="multiselect[' . $id . ']" id="multiselect_'.$id.'" value="yes"' . ( ( isset($field['multiselect']) && $field['multiselect'] === true ) ? ' checked' : '' ) . '></p>
-                ';
             }
+
+            echo '
+            <p><label for="multiselect_'.$id.'">Multi-Select:</label> <input type="checkbox" name="multiselect[' . $id . ']" id="multiselect_'.$id.'" value="yes"' . ( ( isset($field['multiselect']) && $field['multiselect'] === true ) ? ' checked' : '' ) . '></p>
+            ';
         }
 
         if ( $id == 'office' )
