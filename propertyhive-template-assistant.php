@@ -3837,6 +3837,55 @@ final class PH_Template_Assistant {
                 'to_rent' => __( 'To Rent', 'propertyhive' ),
             )
         );
+
+        $prices = array(
+            '' => __( 'No preference', 'propertyhive' ),
+            '100000' => '£100,000',
+            '200000' => '£200,000',
+            '300000' => '£300,000',
+            '400000' => '£400,000',
+            '500000' => '£500,000',
+            '750000' => '£750,000',
+        );
+        $all_fields['commercial_minimum_price'] = array(
+            'type' => 'select',
+            'label' => __( 'Minimum Price', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-commercial_minimum_price commercial-sales-only">',
+            'options' => $prices
+        );
+        $all_fields['commercial_maximum_price'] = array(
+            'type' => 'select',
+            'label' => __( 'Maximum Price', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-commercial_maximum_price commercial-sales-only">',
+            'options' => $prices
+        );
+
+        $prices = array(
+            '' => __( 'No preference', 'propertyhive' ),
+            '500' => '£500',
+            '750' => '£750',
+            '1000' => '£1,000',
+            '1500' => '£1,500',
+            '2000' => '£2,000',
+            '3000' => '£3,000',
+        );
+        $all_fields['commercial_minimum_rent'] = array(
+            'type' => 'select',
+            'label' => __( 'Minimum Rent', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-commercial_minimum_rent commercial-lettings-only">',
+            'options' => $prices
+        );
+        $all_fields['commercial_maximum_rent'] = array(
+            'type' => 'select',
+            'label' => __( 'Maximum Rent', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-commercial_minimum_rent commercial-lettings-only">',
+            'options' => $prices
+        );
+
         $all_fields['sale_by'] = array(
             'type' => 'sale_by',
             'label' => __( 'Sale By', 'propertyhive' ),
