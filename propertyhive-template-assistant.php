@@ -3882,7 +3882,7 @@ final class PH_Template_Assistant {
             'type' => 'select',
             'label' => __( 'Maximum Rent', 'propertyhive' ),
             'show_label' => true,
-            'before' => '<div class="control control-commercial_minimum_rent commercial-lettings-only">',
+            'before' => '<div class="control control-commercial_maximum_rent commercial-lettings-only">',
             'options' => $prices
         );
 
