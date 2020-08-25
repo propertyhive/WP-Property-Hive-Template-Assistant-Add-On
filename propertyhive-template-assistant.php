@@ -2111,8 +2111,8 @@ final class PH_Template_Assistant {
                 // Only add fields that are related to the current section of the merge
                 if ( substr($custom_field['meta_box'], 0, strlen($post_type)+1) === $post_type . '_' ) {
                     // Add value twice to cater for tag with and without preceding underscore
-                    $merge_values[] = get_post_meta( $post_id, $custom_field['field_name'], TRUE );
-                    $merge_values[] = get_post_meta( $post_id, $custom_field['field_name'], TRUE );
+                    $merge_values[] = htmlspecialchars(get_post_meta( $post_id, $custom_field['field_name'], TRUE ));
+                    $merge_values[] = htmlspecialchars(get_post_meta( $post_id, $custom_field['field_name'], TRUE ));
                 }
             }
         }
