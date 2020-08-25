@@ -267,6 +267,8 @@ final class PH_Template_Assistant {
                     {
                         add_filter( 'propertyhive_' . $custom_field['meta_box'] . '_settings', function( $settings )
                         {
+                            global $offices_opening_section_done;
+                            
                             $current_id = empty( $_REQUEST['id'] ) ? '' : (int)$_REQUEST['id'];
 
                             $meta_box_being_done = str_replace( "propertyhive_", "", current_filter() );
@@ -297,18 +299,44 @@ final class PH_Template_Assistant {
                                             );
                                             break;
                                         }
+                                        case "select":
+                                        {
+                                            $options = array('' => '');
+                                            if ( isset($custom_field['dropdown_options']) && is_array($custom_field['dropdown_options']) && !empty($custom_field['dropdown_options']) )
+                                            {
+                                                foreach ( $custom_field['dropdown_options'] as $dropdown_option )
+                                                {
+                                                    $options[$dropdown_option] = $dropdown_option;
+                                                }
+                                            }
+
+                                            $settings[] = array(
+                                                'title'     => $custom_field['field_label'],
+                                                'id'        => $custom_field['field_name'],
+                                                'default'   => get_post_meta($current_id, $custom_field['field_name'], TRUE),
+                                                'type'      => $custom_field['field_type'],
+                                                'desc_tip'  => false,
+                                                'options'   => $options,
+                                            );
+                                            break;
+                                        }
                                         default:
                                         {
                                             $settings[] = array(
                                                 'title'     => $custom_field['field_label'],
                                                 'id'        => $custom_field['field_name'],
                                                 'default'   => get_post_meta($current_id, $custom_field['field_name'], TRUE),
-                                                'type'      => 'text',
+                                                'type'      => $custom_field['field_type'],
                                                 'desc_tip'  =>  false,
                                             );
                                         }
                                     }
                                 }
+                            }
+
+                            if ( $offices_opening_section_done )
+                            {
+                                $settings[] = array( 'type' => 'sectionend', 'id' => 'office_template_assistant_additional_field');
                             }
 
                             return $settings;
