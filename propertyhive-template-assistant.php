@@ -572,6 +572,71 @@ final class PH_Template_Assistant {
                 }, 99, 2 );
             }
         }
+
+        add_action( 'propertyhive_applicant_list_additional_fields',  function()
+        {
+            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['display_on_applicant_requirements']) && $custom_field['display_on_applicant_requirements'] == '1' && substr($custom_field['meta_box'], 0, 9) == 'property_' )
+                {
+                    if ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'select' )
+                    {
+                        ?>
+                        <p class="form-field <?php echo $custom_field['field_name']; ?>_field">
+                            <label for="<?php echo $custom_field['field_name']; ?>"><?php echo $custom_field['field_label']; ?></label>
+                            <select id="<?php echo $custom_field['field_name']; ?>" name="<?php echo $custom_field['field_name']; ?>">
+                            <?php
+                                foreach ( $custom_field['dropdown_options'] as $key => $value ) {
+                                    echo '<option value="' . esc_attr( $key ) . '"';
+                                    if ( isset($_POST[$custom_field['field_name']]) && $_POST[$custom_field['field_name']] == $key )
+                                    {
+                                        echo ' selected';
+                                    }
+                                    echo '>' . esc_html( $value ) . '</option>';
+                                }
+                            ?>
+                            </select>
+                        <?php
+                    }
+                    elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'multiselect' )
+                    {
+                        ?>
+                        <p class="form-field <?php echo $custom_field['field_name']; ?>_field">
+                        <label for="<?php echo $custom_field['field_name']; ?>"><?php echo $custom_field['field_label']; ?></label>
+                                <select id="<?php echo $custom_field['field_name']; ?>" name="<?php echo $custom_field['field_name']; ?>[]" multiple="multiple" data-placeholder="<?php _e( 'Select ' . $custom_field['field_label'], 'propertyhive' ); ?>" class="multiselect attribute_values">
+                                    <?php
+                                        $selected_values = isset($_POST[$custom_field['field_name']]) ? $_POST[$custom_field['field_name']] : array();
+                                        if ( !is_array($selected_values) && $selected_values == '' )
+                                        {
+                                            $selected_values = array();
+                                        }
+                                        elseif ( !is_array($selected_values) && $selected_values != '' )
+                                        {
+                                            $selected_values = array($selected_values);
+                                        }
+
+                                        if ( isset($custom_field['dropdown_options']) && is_array($custom_field['dropdown_options']) && !empty($custom_field['dropdown_options']) )
+                                        {
+                                            foreach ( $custom_field['dropdown_options'] as $dropdown_option )
+                                            {
+                                                echo '<option value="' . esc_attr( $dropdown_option ) . '"';
+                                                if ( in_array( $dropdown_option, $selected_values ) )
+                                                {
+                                                    echo ' selected';
+                                                }
+                                                echo '>' . esc_html( $dropdown_option ) . '</option>';
+                                            }
+                                        }
+                                    ?>
+                                </select>
+                        <?php
+                    }
+                }
+
+            }
+        });
     }
 
     public function add_office_additional_field_table_header_column()
