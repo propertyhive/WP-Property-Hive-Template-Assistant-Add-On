@@ -579,12 +579,28 @@ final class PH_Template_Assistant {
 
             foreach ( $current_settings['custom_fields'] as $custom_field )
             {
+                $display_class = '';
                 if ( isset($custom_field['display_on_applicant_requirements']) && $custom_field['display_on_applicant_requirements'] == '1' && substr($custom_field['meta_box'], 0, 9) == 'property_' )
                 {
+                    switch ($custom_field['meta_box'])
+                    {
+                        case 'property_residential_details' :
+                            $display_class = ' residential-only';
+                            break;
+                        case 'property_residential_sales_details' :
+                            $display_class = ' sales-only';
+                            break;
+                        case 'property_residential_lettings_details' :
+                            $display_class = ' lettings-only';
+                            break;
+                        case 'property_commercial_details' :
+                            $display_class = ' commercial-only';
+                            break;
+                    }
                     if ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'select' )
                     {
                         ?>
-                        <p class="form-field <?php echo $custom_field['field_name']; ?>_field">
+                        <p class="form-field <?php echo $custom_field['field_name']; ?>_field<?php echo $display_class; ?>">
                             <label for="<?php echo $custom_field['field_name']; ?>"><?php echo $custom_field['field_label']; ?></label>
                             <select id="<?php echo $custom_field['field_name']; ?>" name="<?php echo $custom_field['field_name']; ?>">
                             <?php
@@ -603,7 +619,7 @@ final class PH_Template_Assistant {
                     elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'multiselect' )
                     {
                         ?>
-                        <p class="form-field <?php echo $custom_field['field_name']; ?>_field">
+                        <p class="form-field <?php echo $custom_field['field_name']; ?>_field<?php echo $display_class; ?>">
                         <label for="<?php echo $custom_field['field_name']; ?>"><?php echo $custom_field['field_label']; ?></label>
                                 <select id="<?php echo $custom_field['field_name']; ?>" name="<?php echo $custom_field['field_name']; ?>[]" multiple="multiple" data-placeholder="<?php _e( 'Select ' . $custom_field['field_label'], 'propertyhive' ); ?>" class="multiselect attribute_values">
                                     <?php
