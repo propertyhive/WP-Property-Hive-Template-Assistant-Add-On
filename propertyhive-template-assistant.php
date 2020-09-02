@@ -151,6 +151,8 @@ final class PH_Template_Assistant {
         add_action( 'propertyhive_applicant_registered', array( $this, 'applicant_registered' ), 10, 2 );
         add_action( 'propertyhive_account_requirements_updated', array( $this, 'applicant_registered' ), 10, 2 );
 
+        add_filter( 'propertyhive_applicant_list_check', array( $this, 'applicant_list_check' ), 10, 3 );
+
         add_filter( 'propertyhive_room_breakdown_data', array( $this, 'add_custom_fields_to_room_breakdown' ), 10, 3 ); // Applicable when Rooms / Student Accommodation add on active
         
         if ( isset($current_settings['search_result_default_order']) && $current_settings['search_result_default_order'] != '' )
@@ -572,6 +574,89 @@ final class PH_Template_Assistant {
                 }, 99, 2 );
             }
         }
+
+        add_action( 'propertyhive_applicant_list_additional_fields',  function()
+        {
+            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                $display_class = '';
+                if ( isset($custom_field['display_on_applicant_requirements']) && $custom_field['display_on_applicant_requirements'] == '1' && substr($custom_field['meta_box'], 0, 9) == 'property_' )
+                {
+                    switch ($custom_field['meta_box'])
+                    {
+                        case 'property_residential_details' :
+                            $display_class = ' residential-only';
+                            break;
+                        case 'property_residential_sales_details' :
+                            $display_class = ' sales-only';
+                            break;
+                        case 'property_residential_lettings_details' :
+                            $display_class = ' lettings-only';
+                            break;
+                        case 'property_commercial_details' :
+                            $display_class = ' commercial-only';
+                            break;
+                    }
+                    if ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'select' )
+                    {
+                        ?>
+                        <p class="form-field <?php echo $custom_field['field_name']; ?>_field<?php echo $display_class; ?>">
+                            <label for="<?php echo $custom_field['field_name']; ?>"><?php echo $custom_field['field_label']; ?></label>
+                            <select id="<?php echo $custom_field['field_name']; ?>" name="<?php echo $custom_field['field_name']; ?>">
+                                <option value=""></option>
+                                <?php
+                                    foreach ( $custom_field['dropdown_options'] as $key => $value ) 
+                                    {
+                                        echo '<option value="' . esc_attr( $value ) . '"';
+                                        if ( isset($_POST[$custom_field['field_name']]) && $_POST[$custom_field['field_name']] == $value )
+                                        {
+                                            echo ' selected';
+                                        }
+                                        echo '>' . esc_html( $value ) . '</option>';
+                                    }
+                            ?>
+                            </select>
+                        <?php
+                    }
+                    elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'multiselect' )
+                    {
+                        ?>
+                        <p class="form-field <?php echo $custom_field['field_name']; ?>_field<?php echo $display_class; ?>">
+                        <label for="<?php echo $custom_field['field_name']; ?>"><?php echo $custom_field['field_label']; ?></label>
+                                <select id="<?php echo $custom_field['field_name']; ?>" name="<?php echo $custom_field['field_name']; ?>[]" multiple="multiple" data-placeholder="<?php _e( 'Select ' . $custom_field['field_label'], 'propertyhive' ); ?>" class="multiselect attribute_values">
+                                    <?php
+                                        $selected_values = isset($_POST[$custom_field['field_name']]) ? $_POST[$custom_field['field_name']] : array();
+                                        if ( !is_array($selected_values) && $selected_values == '' )
+                                        {
+                                            $selected_values = array();
+                                        }
+                                        elseif ( !is_array($selected_values) && $selected_values != '' )
+                                        {
+                                            $selected_values = array($selected_values);
+                                        }
+
+                                        if ( isset($custom_field['dropdown_options']) && is_array($custom_field['dropdown_options']) && !empty($custom_field['dropdown_options']) )
+                                        {
+                                            foreach ( $custom_field['dropdown_options'] as $dropdown_option )
+                                            {
+                                                echo '<option value="' . esc_attr( $dropdown_option ) . '"';
+                                                if ( in_array( $dropdown_option, $selected_values ) )
+                                                {
+                                                    echo ' selected';
+                                                }
+                                                echo '>' . esc_html( $dropdown_option ) . '</option>';
+                                            }
+                                        }
+                                    ?>
+                                </select>
+                        <?php
+                    }
+                }
+
+            }
+        });
     }
 
     public function add_office_additional_field_table_header_column()
@@ -923,6 +1008,97 @@ final class PH_Template_Assistant {
                                 break;
                             }
                         }
+                    }
+                }
+            }
+        }
+
+        return $check;
+    }
+
+    public function applicant_list_check( $check, $contact_post_id, $applicant_profile )
+    {
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['display_on_applicant_requirements']) && $custom_field['display_on_applicant_requirements'] == '1' && substr($custom_field['meta_box'], 0, 9) == 'property_' )
+                {
+                    if ( !empty($_POST[$custom_field['field_name']]) )
+                    {
+                        if ( isset($applicant_profile[$custom_field['field_name']]) )
+                        {
+                            switch ( $custom_field['field_type'] )
+                            {
+                                case "select":
+                                {
+                                    if ( 
+                                        $applicant_profile[$custom_field['field_name']] == '' ||
+                                        $_POST[$custom_field['field_name']] == $applicant_profile[$custom_field['field_name']]
+                                    )
+                                    {
+
+                                    }
+                                    else
+                                    {
+                                        return false;
+                                    }
+                                    break;
+                                }
+                                case "multiselect":
+                                {
+                                    if ( !is_array($applicant_profile[$custom_field['field_name']]) && $applicant_profile[$custom_field['field_name']] != '' )
+                                    {
+                                        $applicant_profile[$custom_field['field_name']] = array($applicant_profile[$custom_field['field_name']]);
+                                    }
+
+                                    if ( empty($applicant_profile[$custom_field['field_name']]) )
+                                    {
+
+                                    }
+                                    else
+                                    {
+                                        $property_values = $_POST[$custom_field['field_name']];
+                                        if ( empty($property_values) )
+                                        {
+                                            return false;
+                                        }
+
+                                        $applicant_values = $applicant_profile[$custom_field['field_name']];
+
+                                        $value_exists = false;
+
+                                        foreach ( $property_values as $property_value )
+                                        {
+                                            foreach ( $applicant_values as $applicant_value )
+                                            {
+                                                if ( $property_value == $applicant_value )
+                                                {
+                                                    $value_exists = true;
+                                                }
+                                            }
+                                        }
+
+                                        if ( !$value_exists )
+                                        {
+                                            return false;
+                                        }
+                                    }
+
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        return true;
                     }
                 }
             }
