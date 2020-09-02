@@ -151,6 +151,8 @@ final class PH_Template_Assistant {
         add_action( 'propertyhive_applicant_registered', array( $this, 'applicant_registered' ), 10, 2 );
         add_action( 'propertyhive_account_requirements_updated', array( $this, 'applicant_registered' ), 10, 2 );
 
+        add_filter( 'propertyhive_applicant_list_check', array( $this, 'applicant_list_check' ), 10, 3 );
+
         add_filter( 'propertyhive_room_breakdown_data', array( $this, 'add_custom_fields_to_room_breakdown' ), 10, 3 ); // Applicable when Rooms / Student Accommodation add on active
         
         if ( isset($current_settings['search_result_default_order']) && $current_settings['search_result_default_order'] != '' )
@@ -607,8 +609,8 @@ final class PH_Template_Assistant {
                                 <?php
                                     foreach ( $custom_field['dropdown_options'] as $key => $value ) 
                                     {
-                                        echo '<option value="' . esc_attr( $key ) . '"';
-                                        if ( isset($_POST[$custom_field['field_name']]) && $_POST[$custom_field['field_name']] == $key )
+                                        echo '<option value="' . esc_attr( $value ) . '"';
+                                        if ( isset($_POST[$custom_field['field_name']]) && $_POST[$custom_field['field_name']] == $value )
                                         {
                                             echo ' selected';
                                         }
@@ -1006,6 +1008,97 @@ final class PH_Template_Assistant {
                                 break;
                             }
                         }
+                    }
+                }
+            }
+        }
+
+        return $check;
+    }
+
+    public function applicant_list_check( $check, $contact_post_id, $applicant_profile )
+    {
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['display_on_applicant_requirements']) && $custom_field['display_on_applicant_requirements'] == '1' && substr($custom_field['meta_box'], 0, 9) == 'property_' )
+                {
+                    if ( !empty($_POST[$custom_field['field_name']]) )
+                    {
+                        if ( isset($applicant_profile[$custom_field['field_name']]) )
+                        {
+                            switch ( $custom_field['field_type'] )
+                            {
+                                case "select":
+                                {
+                                    if ( 
+                                        $applicant_profile[$custom_field['field_name']] == '' ||
+                                        $_POST[$custom_field['field_name']] == $applicant_profile[$custom_field['field_name']]
+                                    )
+                                    {
+
+                                    }
+                                    else
+                                    {
+                                        return false;
+                                    }
+                                    break;
+                                }
+                                case "multiselect":
+                                {
+                                    if ( !is_array($applicant_profile[$custom_field['field_name']]) && $applicant_profile[$custom_field['field_name']] != '' )
+                                    {
+                                        $applicant_profile[$custom_field['field_name']] = array($applicant_profile[$custom_field['field_name']]);
+                                    }
+
+                                    if ( empty($applicant_profile[$custom_field['field_name']]) )
+                                    {
+
+                                    }
+                                    else
+                                    {
+                                        $property_values = $_POST[$custom_field['field_name']];
+                                        if ( empty($property_values) )
+                                        {
+                                            return false;
+                                        }
+
+                                        $applicant_values = $applicant_profile[$custom_field['field_name']];
+
+                                        $value_exists = false;
+
+                                        foreach ( $property_values as $property_value )
+                                        {
+                                            foreach ( $applicant_values as $applicant_value )
+                                            {
+                                                if ( $property_value == $applicant_value )
+                                                {
+                                                    $value_exists = true;
+                                                }
+                                            }
+                                        }
+
+                                        if ( !$value_exists )
+                                        {
+                                            return false;
+                                        }
+                                    }
+
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        return true;
                     }
                 }
             }
