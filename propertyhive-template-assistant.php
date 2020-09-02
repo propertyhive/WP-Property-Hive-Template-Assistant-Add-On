@@ -290,6 +290,9 @@ final class PH_Template_Assistant {
                                     {
                                         case "image":
                                         {
+                                            if ( !did_action( 'wp_enqueue_media' ) )
+                                                wp_enqueue_media();
+
                                             $settings[] = array(
                                                 'title'     => $custom_field['field_label'],
                                                 'id'        => $custom_field['field_name'],
