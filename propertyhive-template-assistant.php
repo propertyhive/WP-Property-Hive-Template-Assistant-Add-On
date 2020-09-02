@@ -603,15 +603,17 @@ final class PH_Template_Assistant {
                         <p class="form-field <?php echo $custom_field['field_name']; ?>_field<?php echo $display_class; ?>">
                             <label for="<?php echo $custom_field['field_name']; ?>"><?php echo $custom_field['field_label']; ?></label>
                             <select id="<?php echo $custom_field['field_name']; ?>" name="<?php echo $custom_field['field_name']; ?>">
-                            <?php
-                                foreach ( $custom_field['dropdown_options'] as $key => $value ) {
-                                    echo '<option value="' . esc_attr( $key ) . '"';
-                                    if ( isset($_POST[$custom_field['field_name']]) && $_POST[$custom_field['field_name']] == $key )
+                                <option value=""></option>
+                                <?php
+                                    foreach ( $custom_field['dropdown_options'] as $key => $value ) 
                                     {
-                                        echo ' selected';
+                                        echo '<option value="' . esc_attr( $key ) . '"';
+                                        if ( isset($_POST[$custom_field['field_name']]) && $_POST[$custom_field['field_name']] == $key )
+                                        {
+                                            echo ' selected';
+                                        }
+                                        echo '>' . esc_html( $value ) . '</option>';
                                     }
-                                    echo '>' . esc_html( $value ) . '</option>';
-                                }
                             ?>
                             </select>
                         <?php
