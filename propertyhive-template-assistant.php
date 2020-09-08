@@ -4231,6 +4231,13 @@ final class PH_Template_Assistant {
             'before' => '<div class="control control-office">'
         );
 
+        $all_fields['keyword'] = array(
+            'type' => 'text',
+            'label' => __( 'Keyword', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-keyword">'
+        );
+
         $form_controls = ph_get_search_form_fields();
         $active_fields = apply_filters( 'propertyhive_search_form_fields_' . $current_id, $form_controls );
 
