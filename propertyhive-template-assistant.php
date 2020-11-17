@@ -4520,7 +4520,7 @@ final class PH_Template_Assistant {
                                 foreach ($custom_fields as $id => $custom_field)
                                 {
                                     echo '<tr id="custom_field_' . $id . '">';
-                                        echo '<td class="field-label">' . $custom_field['field_label'] . '</td>';
+                                        echo '<td class="field-label"><span class="sort_anchor" style="cursor:grab "> ⇅ </span>' . $custom_field['field_label'] . '</td>';
                                         echo '<td class="section">' . ucwords( str_replace("_", " ", $custom_field['meta_box']) ) . '</td>';
                                         echo '<td class="usage">';
                                         if ( substr( $custom_field['meta_box'], 0, 8 ) == 'property' ) { echo '<pre style="background:#EEE; padding:5px; display:inline">&lt;?php $property->' . ltrim( $custom_field['field_name'], '_' ) . '; ?&gt;</pre>'; }else{ echo '-';}
