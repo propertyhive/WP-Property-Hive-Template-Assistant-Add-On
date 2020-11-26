@@ -1454,7 +1454,7 @@ final class PH_Template_Assistant {
                             $values = get_post_meta( $the_property->id, $custom_field['field_name'], TRUE );
                             if ( !empty($values) )
                             {
-                                echo implode(", ", $values);
+                                echo is_array($values) ? implode(", ", $values) : $values;
                             }
                         }
                         elseif ( $custom_field['field_type'] == 'date' )
@@ -1580,7 +1580,7 @@ final class PH_Template_Assistant {
                             $values = get_post_meta( $the_contact->id, $custom_field['field_name'], TRUE );
                             if ( !empty($values) )
                             {
-                                echo implode(", ", $values);
+                                echo is_array($values) ? implode(", ", $values) : $values;
                             }
                         }
                         elseif ( $custom_field['field_type'] == 'date' )
@@ -1691,7 +1691,7 @@ final class PH_Template_Assistant {
                             $values = get_post_meta( $the_enquiry->id, $custom_field['field_name'], TRUE );
                             if ( !empty($values) )
                             {
-                                echo implode(", ", $values);
+                                echo is_array($values) ? implode(", ", $values) : $values;
                             }
                         }
                         elseif ( $custom_field['field_type'] == 'date' )
@@ -1802,7 +1802,7 @@ final class PH_Template_Assistant {
                             $values = get_post_meta( $the_appraisal->id, $custom_field['field_name'], TRUE );
                             if ( !empty($values) )
                             {
-                                echo implode(", ", $values);
+                                echo is_array($values) ? implode(", ", $values) : $values;
                             }
                         }
                         elseif ( $custom_field['field_type'] == 'date' )
@@ -1913,7 +1913,7 @@ final class PH_Template_Assistant {
                             $values = get_post_meta( $the_viewing->id, $custom_field['field_name'], TRUE );
                             if ( !empty($values) )
                             {
-                                echo implode(", ", $values);
+                                echo is_array($values) ? implode(", ", $values) : $values;
                             }
                         }
                         elseif ( $custom_field['field_type'] == 'date' )
@@ -2024,7 +2024,7 @@ final class PH_Template_Assistant {
                             $values = get_post_meta( $the_offer->id, $custom_field['field_name'], TRUE );
                             if ( !empty($values) )
                             {
-                                echo implode(", ", $values);
+                                echo is_array($values) ? implode(", ", $values) : $values;
                             }
                         }
                         elseif ( $custom_field['field_type'] == 'date' )
@@ -2135,7 +2135,7 @@ final class PH_Template_Assistant {
                             $values = get_post_meta( $the_sale->id, $custom_field['field_name'], TRUE );
                             if ( !empty($values) )
                             {
-                                echo implode(", ", $values);
+                                echo is_array($values) ? implode(", ", $values) : $values;
                             }
                         }
                         elseif ( $custom_field['field_type'] == 'date' )
@@ -2442,10 +2442,11 @@ final class PH_Template_Assistant {
                 if ( $custom_field['field_type'] == 'multiselect' )
                 {
                     $values = get_post_meta( $property->id, $custom_field['field_name'], TRUE );
+
                     if ( !empty($values) )
                     {
                         echo '<li class="' . trim($custom_field['field_name'], '_') . '">' . $custom_field['field_label'] . ': ';
-                        echo implode(", ", $values);
+                        echo is_array($values) ? implode(", ", $values) : $values;
                     }
                 }
                 elseif ( $custom_field['field_type'] == 'date' )
