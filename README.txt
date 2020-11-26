@@ -31,6 +31,7 @@ Updating should work like a charm; as always though, ensure you backup your site
 = 1.0.40 =
 * Cater for additional fields of type 'Select' being changed to 'Multi-Select'
 * Add a handle for sorting Additional Fields while allowing Usage text to still be selected
+* Support upcoming jQuery changes in WordPress 5.6
 * Declare support for WordPress 5.5.3
 
 = 1.0.39 =
