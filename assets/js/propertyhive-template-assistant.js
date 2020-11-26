@@ -8,7 +8,7 @@ jQuery(document).ready(function()
 	ph_template_assistant_set_image_heights();
 });
 
-jQuery(window).load(function()
+jQuery(window).on('load', function()
 {
 	ph_template_assistant_set_image_heights();
 });
