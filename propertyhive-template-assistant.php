@@ -978,7 +978,7 @@ final class PH_Template_Assistant {
                                 }
                                 else
                                 {
-                                    $property_values = $property->{$custom_field['field_name']};
+                                    $property_values = !is_array($property->{$custom_field['field_name']}) ? array($property->{$custom_field['field_name']}) : $property->{$custom_field['field_name']};
                                     if ( empty($property_values) )
                                     {
                                         return false;
