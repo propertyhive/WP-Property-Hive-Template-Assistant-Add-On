@@ -1109,11 +1109,10 @@ final class PH_Template_Assistant {
 
     public function applicant_requirements_form_fields( $form_controls )
     {
-        $applicant_profile = array();
+        $applicant_profiles = array();
         if ( is_user_logged_in() )
         {
             $current_user = wp_get_current_user();
-            $applicant_profile = false;
 
             if ( $current_user instanceof WP_User )
             {
@@ -1123,12 +1122,18 @@ final class PH_Template_Assistant {
                 {
                     if (
                         $contact->applicant_profiles != '' &&
-                        $contact->applicant_profiles > 0 &&
-                        $contact->applicant_profile_0 != '' &&
-                        is_array($contact->applicant_profile_0)
+                        $contact->applicant_profiles > 0
                     )
                     {
-                        $applicant_profile = $contact->applicant_profile_0;
+                        for ($x = 0; $x <= $contact->applicant_profiles; $x++) {
+                            if (
+                                $contact->{'applicant_profile_' . $x} != '' &&
+                                is_array($contact->{'applicant_profile_' . $x})
+                            )
+                            {
+                                $applicant_profiles[$x] = $contact->{'applicant_profile_' . $x};
+                            }
+                        }
                     }
                 }
             }
@@ -1138,40 +1143,63 @@ final class PH_Template_Assistant {
 
         if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
         {
-            foreach ( $current_settings['custom_fields'] as $custom_field )
+            if ( count($applicant_profiles) == 0 )
             {
-                if ( isset($custom_field['display_on_applicant_requirements']) && $custom_field['display_on_applicant_requirements'] == '1' && substr($custom_field['meta_box'], 0, 9) == 'property_' )
+                $applicant_profiles = array( 0 => array() );
+            }
+
+            foreach ( $applicant_profiles as $key => $applicant_profile )
+            {
+                $custom_form_fields = array();
+                $temp_form_controls = $form_controls;
+                foreach ( $current_settings['custom_fields'] as $custom_field )
                 {
-                    switch ( $custom_field['field_type'] )
+                    if ( isset($custom_field['display_on_applicant_requirements']) && $custom_field['display_on_applicant_requirements'] == '1' && substr($custom_field['meta_box'], 0, 9) == 'property_' )
                     {
-                        case "select":
-                        case "multiselect":
+                        switch ( $custom_field['field_type'] )
                         {
-                            $options = array('' => '');
-                            foreach ($custom_field['dropdown_options'] as $dropdown_option)
+                            case "select":
+                            case "multiselect":
                             {
-                                $options[$dropdown_option] = ph_clean($dropdown_option);
+                                $options = array('' => '');
+                                foreach ($custom_field['dropdown_options'] as $dropdown_option)
+                                {
+                                    $options[$dropdown_option] = ph_clean($dropdown_option);
+                                }
+
+                                $value = isset($applicant_profile[$custom_field['field_name']]) ? $applicant_profile[$custom_field['field_name']] : '';
+                                if ( is_array($value) && !empty($value) )
+                                {
+                                    $value = $value[0];
+                                }
+
+                                $custom_form_fields[$custom_field['field_name'] . '_' . $key] = array(
+                                    'type' => 'select',
+                                    'label' => $custom_field['field_label'],
+                                    'required' => false,
+                                    'show_label' => true,
+                                    'value' => $value,
+                                    'options' => $options
+                                );
+
+                                break;
                             }
-
-                            $value = isset($applicant_profile[$custom_field['field_name']]) ? $applicant_profile[$custom_field['field_name']] : '';
-                            if ( is_array($value) && !empty($value) )
-                            {
-                                $value = $value[0];
-                            }
-
-                            $form_controls[$custom_field['field_name']] = array(
-                                'type' => 'select',
-                                'label' => $custom_field['field_label'],
-                                'required' => false,
-                                'show_label' => true,
-                                'value' => $value,
-                                'options' => $options
-                            );
-
-                            break;
                         }
                     }
                 }
+
+                // Find the last form field for this applicant (ends in "_0", for example) and place the custom fields after that
+                // This ensures the form fields for each applicant are grouped together
+                $form_controls_keys = array_keys($form_controls);
+                $matching_keys = preg_grep('/\_' . $key . '$/', $form_controls_keys);
+                $last_key = end($matching_keys);
+                $last_key_position = array_search($last_key, array_keys($form_controls))+1;
+
+                $form_controls = array_merge(
+                    array_slice($temp_form_controls, 0, $last_key_position),
+                    $custom_form_fields,
+                    array_slice($temp_form_controls, $last_key_position, null)
+                );
             }
         }
 
