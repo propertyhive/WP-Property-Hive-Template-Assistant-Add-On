@@ -139,6 +139,11 @@ final class PH_Template_Assistant {
         add_filter( 'manage_edit-sale_sortable_columns', array( $this, 'custom_fields_in_sale_admin_list_sort' ) );
         add_filter( 'request', array( $this, 'custom_fields_in_sale_admin_list_orderby' ) );
 
+        add_filter( 'manage_edit-tenancy_columns', array( $this, 'custom_fields_in_tenancy_admin_list_edit' ) );
+        add_action( 'manage_tenancy_posts_custom_column', array( $this, 'custom_fields_in_tenancy_admin_list' ), 2 );
+        add_filter( 'manage_edit-tenancy_sortable_columns', array( $this, 'custom_fields_in_tenancy_admin_list_sort' ) );
+        add_filter( 'request', array( $this, 'custom_fields_in_tenancy_admin_list_orderby' ) );
+
         add_action( 'propertyhive_office_table_header_columns', array( $this, 'add_office_additional_field_table_header_column' ), 10 );
         add_action( 'propertyhive_office_table_row_columns', array( $this, 'add_office_additional_field_table_row_column' ), 10 );
 
@@ -2168,6 +2173,118 @@ final class PH_Template_Assistant {
                     if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && isset($custom_field['admin_list_sortable']) && $custom_field['admin_list_sortable'] == '1' && substr($custom_field['meta_box'], 0, 5) == 'sale_' )
                     {
                         if ( $custom_field['field_name'] == $vars['orderby'] ) 
+                        {
+                            $vars = array_merge( $vars, array(
+                                'meta_key'  => $custom_field['field_name'],
+                                'orderby'   => 'meta_value'
+                            ) );
+                        }
+                    }
+                }
+            }
+        }
+
+        return $vars;
+    }
+
+    // Additional fields in tenancy admin list
+    public function custom_fields_in_tenancy_admin_list_edit( $existing_columns )
+    {
+        if ( empty( $existing_columns ) && ! is_array( $existing_columns ) ) {
+            $existing_columns = array();
+        }
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                var_dump($custom_field['meta_box']);
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && substr($custom_field['meta_box'], 0, 8) == 'tenancy_' )
+                {
+                    $existing_columns[$custom_field['field_name']] = __( $custom_field['field_label'], 'propertyhive' );
+                }
+            }
+        }
+
+        return $existing_columns;
+    }
+
+    public function custom_fields_in_tenancy_admin_list( $column )
+    {
+        global $post, $propertyhive, $the_tenancy;
+
+        if ( empty( $the_tenancy ) || $the_tenancy->ID != $post->ID )
+        {
+            $the_tenancy = new PH_Tenancy( $post->ID );
+        }
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && substr($custom_field['meta_box'], 0, 8) == 'tenancy_' && $custom_field['field_name'] == $column )
+                {
+                    if ( $the_tenancy->{$custom_field['field_name']} != '' )
+                    {
+                        if ( $custom_field['field_type'] == 'multiselect' )
+                        {
+                            $values = get_post_meta( $the_tenancy->id, $custom_field['field_name'], TRUE );
+                            if ( !empty($values) )
+                            {
+                                echo is_array($values) ? implode(", ", $values) : $values;
+                            }
+                        }
+                        elseif ( $custom_field['field_type'] == 'date' )
+                        {
+                            echo date(get_option( 'date_format' ), strtotime($the_tenancy->{$custom_field['field_name']}));
+                        }
+                        else
+                        {
+                            echo $the_tenancy->{$custom_field['field_name']};
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public function custom_fields_in_tenancy_admin_list_sort( $columns )
+    {
+        $custom = array();
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && isset($custom_field['admin_list_sortable']) && $custom_field['admin_list_sortable'] == '1' && substr($custom_field['meta_box'], 0, 8) == 'tenancy_' )
+                {
+                    $custom[$custom_field['field_name']] = $custom_field['field_name'];
+                }
+            }
+        }
+
+        return wp_parse_args( $custom, $columns );
+    }
+
+    public function custom_fields_in_tenancy_admin_list_orderby( $vars )
+    {
+        if ( isset( $vars['orderby'] ) )
+        {
+            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+            if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+            {
+                foreach ( $current_settings['custom_fields'] as $custom_field )
+                {
+                    if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && isset($custom_field['admin_list_sortable']) && $custom_field['admin_list_sortable'] == '1' && substr($custom_field['meta_box'], 0, 8) == 'tenancy_' )
+                    {
+                        if ( $custom_field['field_name'] == $vars['orderby'] )
                         {
                             $vars = array_merge( $vars, array(
                                 'meta_key'  => $custom_field['field_name'],
@@ -4686,6 +4803,12 @@ final class PH_Template_Assistant {
             $options['sale_details'] = __( 'Sale Details', 'propertyhive' );
         }
 
+        if ( get_option('propertyhive_module_disabled_tenancies', '') != 'yes' )
+        {
+            $options['tenancy_details'] = __( 'Tenancy Details', 'propertyhive' );
+            $options['management_details'] = __( 'Management Details', 'propertyhive' );
+        }
+
         $options['office_details'] = __( 'Office Details', 'propertyhive' );
 
         $options = apply_filters( 'propertyhive_template_assistant_custom_field_sections', $options );
@@ -4766,6 +4889,9 @@ final class PH_Template_Assistant {
                     jQuery(\'#row_display_on_applicant_requirements\').hide();
                     jQuery(\'#row_display_on_user_details\').hide();
 
+                    jQuery(\'#row_admin_list\').show();
+                    jQuery(\'#row_admin_list_sortable\').show();
+
                     if ( meta_box.indexOf(\'property_\') != -1 )
                     {
                         jQuery(\'#row_display_on_website\').show();
@@ -4778,6 +4904,11 @@ final class PH_Template_Assistant {
                     if ( meta_box.indexOf(\'contact_\') != -1 )
                     {
                         jQuery(\'#row_display_on_user_details\').show();
+                    }
+                    if ( meta_box == \'management_details\' )
+                    {
+                        jQuery(\'#row_admin_list\').hide();
+                        jQuery(\'#row_admin_list_sortable\').hide();
                     }
                 }
 
