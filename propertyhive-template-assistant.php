@@ -4805,7 +4805,7 @@ final class PH_Template_Assistant {
         if ( get_option('propertyhive_module_disabled_tenancies', '') != 'yes' )
         {
             $options['tenancy_details'] = __( 'Tenancy Details', 'propertyhive' );
-            $options['management_details'] = __( 'Management Details', 'propertyhive' );
+            $options['tenancy_management_details'] = __( 'Tenancy Management Details', 'propertyhive' );
         }
 
         $options['office_details'] = __( 'Office Details', 'propertyhive' );
@@ -4904,7 +4904,7 @@ final class PH_Template_Assistant {
                     {
                         jQuery(\'#row_display_on_user_details\').show();
                     }
-                    if ( meta_box == \'management_details\' )
+                    if ( meta_box == \'tenancy_management_details\' )
                     {
                         jQuery(\'#row_admin_list\').hide();
                         jQuery(\'#row_admin_list_sortable\').hide();
