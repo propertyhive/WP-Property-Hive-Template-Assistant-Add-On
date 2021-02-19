@@ -2200,7 +2200,6 @@ final class PH_Template_Assistant {
         {
             foreach ( $current_settings['custom_fields'] as $custom_field )
             {
-                var_dump($custom_field['meta_box']);
                 if ( isset($custom_field['admin_list']) && $custom_field['admin_list'] == '1' && substr($custom_field['meta_box'], 0, 8) == 'tenancy_' )
                 {
                     $existing_columns[$custom_field['field_name']] = __( $custom_field['field_label'], 'propertyhive' );
