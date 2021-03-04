@@ -4802,7 +4802,7 @@ final class PH_Template_Assistant {
             $options['sale_details'] = __( 'Sale Details', 'propertyhive' );
         }
 
-        if ( get_option('propertyhive_module_disabled_tenancies', '') != 'yes' )
+        if ( get_option( 'propertyhive_active_departments_lettings' ) == 'yes' && get_option('propertyhive_module_disabled_tenancies', '') != 'yes' )
         {
             $options['tenancy_details'] = __( 'Tenancy Details', 'propertyhive' );
             $options['tenancy_management_details'] = __( 'Tenancy Management Details', 'propertyhive' );
