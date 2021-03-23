@@ -4806,6 +4806,8 @@ final class PH_Template_Assistant {
         {
             $options['tenancy_details'] = __( 'Tenancy Details', 'propertyhive' );
             $options['tenancy_management_details'] = __( 'Tenancy Management Details', 'propertyhive' );
+            $options['tenancy_deposit_scheme'] = __( 'Tenancy Deposit Scheme Details', 'propertyhive' );
+            $options['tenancy_meter_readings'] = __( 'Tenancy Meter Readings', 'propertyhive' );
         }
 
         $options['office_details'] = __( 'Office Details', 'propertyhive' );
