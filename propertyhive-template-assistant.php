@@ -170,6 +170,11 @@ final class PH_Template_Assistant {
             add_action( 'init', array( $this, 'search_result_field_changes' ) );
         }
 
+        if ( isset($current_settings['search_result_image_size']) && $current_settings['search_result_image_size'] != '' )
+        {
+            add_filter( 'property_search_results_thumbnail_size', array( $this, 'search_result_image_size_changes' ) );
+        }
+
         if ( isset($current_settings['flags_active']) && $current_settings['flags_active'] == '1' )
         {
             add_action( 'propertyhive_before_search_results_loop_item_title', array( $this, 'add_flag' ), 15 );
@@ -1305,6 +1310,18 @@ final class PH_Template_Assistant {
                 $priority += 5;
             }
         }
+    }
+
+    public function search_result_image_size_changes( $image_size )
+    {
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['search_result_image_size']) && $current_settings['search_result_image_size'] != '' )
+        {
+            $image_size = $current_settings['search_result_image_size'];
+        }
+
+        return $image_size;
     }
 
     public function propertyhive_template_loop_custom_field()
@@ -3318,6 +3335,7 @@ final class PH_Template_Assistant {
                 'search_result_columns' => $_POST['search_result_columns'],
                 'search_result_layout' => $_POST['search_result_layout'],
                 'search_result_fields' => $search_results_fields,
+                'search_result_image_size' => $_POST['search_result_image_size'],
                 'search_result_css' => trim($_POST['search_result_css']),
                 'search_result_css_all_pages' => isset($_POST['search_result_css_all_pages']) ? 'yes' : '',
             );
@@ -3503,6 +3521,24 @@ final class PH_Template_Assistant {
             'type'      => 'html',
             'html'      => $html
         );
+
+        if ( get_option('propertyhive_images_stored_as', '') != 'urls' )
+        {
+            $image_sizes = get_intermediate_image_sizes();
+            $image_size_options = array();
+            foreach ( $image_sizes as $image_size )
+            {
+                $image_size_options[$image_size] = $image_size;
+            }
+
+            $settings[] = array(
+                'title' => __( 'Image Size Used', 'propertyhive' ),
+                'id'        => 'search_result_image_size',
+                'type'      => 'select',
+                'default'   => ( isset($current_settings['search_result_image_size']) ? $current_settings['search_result_image_size'] : 'medium'),
+                'options'   => $image_size_options
+            );
+        }
 
         $columns_1_css = file_get_contents(dirname(PH_TEMPLATE_ASSISTANT_PLUGIN_FILE) . '/assets/css/columns-1.css');
         $columns_2_css = file_get_contents(dirname(PH_TEMPLATE_ASSISTANT_PLUGIN_FILE) . '/assets/css/columns-2.css');
