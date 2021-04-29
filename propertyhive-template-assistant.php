@@ -1101,14 +1101,6 @@ final class PH_Template_Assistant {
                                 }
                             }
                         }
-                        else
-                        {
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        return true;
                     }
                 }
             }
