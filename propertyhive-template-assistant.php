@@ -3328,7 +3328,7 @@ final class PH_Template_Assistant {
                 'search_result_layout' => $_POST['search_result_layout'],
                 'search_result_fields' => $search_results_fields,
                 'search_result_image_size' => $_POST['search_result_image_size'],
-                'search_result_css' => trim($_POST['search_result_css']),
+                'search_result_css' => stripslashes($_POST['search_result_css']),
                 'search_result_css_all_pages' => isset($_POST['search_result_css_all_pages']) ? 'yes' : '',
             );
 
