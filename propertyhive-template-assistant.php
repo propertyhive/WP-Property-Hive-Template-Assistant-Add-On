@@ -667,6 +667,9 @@ final class PH_Template_Assistant {
 
             }
         });
+
+        add_filter( 'propertyhive_elementor_widgets', array( $this, 'additional_field_elementor_widget' ), 10 );
+        add_filter( 'propertyhive_elementor_widget_directory', array( $this, 'additional_field_elementor_widget_dir' ), 10, 2 );
     }
 
     public function add_office_additional_field_table_header_column()
@@ -5067,6 +5070,36 @@ final class PH_Template_Assistant {
             }
         </script>
         ';
+    }
+
+    public function additional_field_elementor_widget( $widgets )
+    {
+        global $property;
+
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        $custom_fields = ( (isset($current_settings['custom_fields'])) ? $current_settings['custom_fields'] : array() );
+
+        foreach ( $custom_fields as $custom_field )
+        {
+            if ( substr($custom_field['meta_box'], 0, 9) == 'property_' )
+            {
+                $widgets[] = 'Property Additional Field';
+            }
+        }
+
+        return $widgets;
+    }
+
+    public function additional_field_elementor_widget_dir( $widget_dir, $widget )
+    {
+        if ( $widget == 'Property Additional Field' )
+        {
+            $widget_dir = 'elementor-widgets';
+            $widget_dir = dirname(__FILE__) . "/includes/" . $widget_dir;
+        }
+
+        return $widget_dir;
     }
 }
 
