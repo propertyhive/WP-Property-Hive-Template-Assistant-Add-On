@@ -571,10 +571,31 @@ final class PH_Template_Assistant {
                                         $args['meta_query'] = array();
                                     }
 
+                                    // Format meta query as "= value" or "LIKE value"
+                                    $value = $atts[trim($custom_field['field_name'], '_')];
+                                    $compare = $custom_field['field_type'] == 'multiselect' ? 'LIKE' : '=';
+
+                                    // A comma-delimited list of values has been specified
+                                    if ( strpos($value, ',') !== false )
+                                    {
+                                        if ( $custom_field['field_type'] == 'multiselect' )
+                                        {
+                                            // Format meta query as "REGEXP value1|value2"
+                                            $value = str_replace(',', "|", $value);
+                                            $compare = 'REGEXP';
+                                        }
+                                        else
+                                        {
+                                            // Format meta query as "IN array(value1, value2)"
+                                            $value = explode(',', $value);
+                                            $compare = 'IN';
+                                        }
+                                    }
+
                                     $args['meta_query'][] = array(
                                         'key' => $custom_field['field_name'],
-                                        'value' => $atts[trim($custom_field['field_name'], '_')],
-                                        'compare' => $custom_field['field_type'] == 'multiselect' ? 'LIKE' : '=',
+                                        'value' => $value,
+                                        'compare' => $compare,
                                     );
                                 }
                             }
