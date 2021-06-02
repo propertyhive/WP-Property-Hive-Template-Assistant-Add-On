@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=N68UH
 Requires at least: 3.8
 Tested up to: 5.7.2
 Stable tag: trunk
-Version: 1.0.44
+Version: 1.0.45
 Homepage: http://wp-property-hive.com/addons/template-assistant/
 
 This add on for Property Hive assists with the layout of property pages and more.
@@ -27,6 +27,11 @@ Once installed and activated, you can access the settings for this add on by nav
 Updating should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 1.0.45 =
+* Added new Elementor widget allowing custom fields to be added to templates
+* Catered for multiple values being passed through to shortcodes when wanting to pull in properties based on an additional field
+* Corrected undefinded index PHP error when saving settings but media stored as URLs
 
 = 1.0.44 =
 * Corrected issue with double quotes being escaped in search results CSS
