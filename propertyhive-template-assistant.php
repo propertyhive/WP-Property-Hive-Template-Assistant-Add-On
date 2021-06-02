@@ -581,7 +581,7 @@ final class PH_Template_Assistant {
                                         if ( $custom_field['field_type'] == 'multiselect' )
                                         {
                                             // Format meta query as "REGEXP value1|value2"
-                                            $value = str_replace(',', "|", $value);
+                                            $value = '"' . str_replace(',', '"|"', $value) . '"';
                                             $compare = 'REGEXP';
                                         }
                                         else
