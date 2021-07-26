@@ -4331,6 +4331,14 @@ final class PH_Template_Assistant {
             'options' => $bedrooms
         );
 
+        $all_fields['maximum_bedrooms'] = array(
+            'type' => 'select',
+            'label' => __( 'Max Beds', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-maximum_bedrooms residential-only">',
+            'options' => $bedrooms
+        );
+
         $bathrooms = array(
             '' => __( 'No preference', 'propertyhive' ),
             '1' => '1',
@@ -4340,13 +4348,6 @@ final class PH_Template_Assistant {
             '5' => '5',
         );
 
-        $all_fields['maximum_bedrooms'] = array(
-            'type' => 'select',
-            'label' => __( 'Max Beds', 'propertyhive' ),
-            'show_label' => true,
-            'before' => '<div class="control control-maximum_bedrooms residential-only">',
-            'options' => $bathrooms
-        );
         $all_fields['minimum_bathrooms'] = array(
             'type' => 'select',
             'label' => __( 'Min Bathrooms', 'propertyhive' ),
