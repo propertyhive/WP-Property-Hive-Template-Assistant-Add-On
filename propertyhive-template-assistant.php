@@ -4391,6 +4391,21 @@ final class PH_Template_Assistant {
             'before' => '<div class="control control-keyword">'
         );
 
+        $currencies = array(
+            '' => '',
+            'GBP' => 'GBP',
+            'EUR' => 'EUR',
+            'USD' => 'USD',
+        );
+
+        $all_fields['currency'] = array(
+            'type' => 'select',
+            'label' => __( 'Currency', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-currency">',
+            'options' => $currencies
+        );
+
         $form_controls = ph_get_search_form_fields();
         $active_fields = apply_filters( 'propertyhive_search_form_fields_' . $current_id, $form_controls );
 
