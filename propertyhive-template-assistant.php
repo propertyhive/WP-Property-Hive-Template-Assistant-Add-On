@@ -476,6 +476,15 @@ final class PH_Template_Assistant {
                                             'button_label' => __( 'Select Image', 'propertyhive' )
                                         ), $thepostid ) );
                                     }
+                                    elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'file' )
+                                    {
+                                        propertyhive_wp_file_upload( apply_filters( 'propertyhive_template_assistant_custom_field_args_' . ltrim($custom_field['field_name'], '_'), array( 
+                                            'id' => $custom_field['field_name'], 
+                                            'label' => $custom_field['field_label'], 
+                                            'desc_tip' => false,
+                                            'button_label' => __( 'Select File', 'propertyhive' )
+                                        ), $thepostid ) );
+                                    }
                                     else
                                     {
                                         propertyhive_wp_text_input( apply_filters( 'propertyhive_template_assistant_custom_field_args_' . ltrim($custom_field['field_name'], '_'), array( 
@@ -1496,6 +1505,19 @@ final class PH_Template_Assistant {
                                 {
                                     echo 'Image doesn\'t exist';
                                 }
+                            }
+                        }
+                        elseif ( $custom_field['field_type'] == 'file' )
+                        {
+                            $file = get_attached_file( $the_property->{$custom_field['field_name']} );
+                            if ( $file !== FALSE )
+                            {
+                                $filename = basename( $file );
+                                echo '<a href="' . wp_get_attachment_url($the_property->{$custom_field['field_name']}) . '" target="_blank">' . $filename . '</a>';
+                            }
+                            else
+                            {
+                                echo 'Image doesn\'t exist';
                             }
                         }
                         else
@@ -4808,6 +4830,7 @@ final class PH_Template_Assistant {
                 'multiselect' => 'Multi-Select',
                 'date' => 'Date',
                 'image' => 'Image',
+                'file' => 'File',
             )
         );
 
