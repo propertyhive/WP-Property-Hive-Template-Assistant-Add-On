@@ -2593,31 +2593,61 @@ final class PH_Template_Assistant {
         {
             if ( isset($custom_field['display_on_website']) && $custom_field['display_on_website'] == '1' && substr($custom_field['meta_box'], 0, 9) == 'property_' )
             {
+                $label = '<span class="' . trim($custom_field['field_name'], '_') . '_label">' . $custom_field['field_label'] . ': </span>';
+
                 if ( $custom_field['field_type'] == 'multiselect' )
                 {
                     $values = get_post_meta( $property->id, $custom_field['field_name'], TRUE );
 
                     if ( !empty($values) )
                     {
-                        echo '<li class="' . trim($custom_field['field_name'], '_') . '">' . $custom_field['field_label'] . ': ';
+                        echo '<li class="' . trim($custom_field['field_name'], '_') . '">' . $label;
                         echo is_array($values) ? implode(", ", $values) : $values;
                     }
                 }
                 elseif ( $custom_field['field_type'] == 'date' )
                 {
-                    if ( $property->{$custom_field['field_name']} != '' ) { ?><li class="<?php echo trim($custom_field['field_name'], '_'); ?>"><?php echo $custom_field['field_label']; echo ': ' . date(get_option( 'date_format' ), strtotime($property->{$custom_field['field_name']})); ?></li><?php }
+                    if ( $property->{$custom_field['field_name']} != '' )
+                    {
+                        ?>
+                        <li class="<?php echo trim($custom_field['field_name'], '_'); ?>">
+                            <?php echo $label . date(get_option( 'date_format' ), strtotime($property->{$custom_field['field_name']})); ?>
+                        </li>
+                        <?php
+                    }
                 }
                 elseif ( $custom_field['field_type'] == 'image' )
                 {
-                    if ( $property->{$custom_field['field_name']} != '' ) { ?><li class="<?php echo trim($custom_field['field_name'], '_'); ?>"><?php echo $custom_field['field_label']; echo ': ' . wp_get_attachment_image($property->{$custom_field['field_name']}); ?></li><?php }
+                    if ( $property->{$custom_field['field_name']} != '' )
+                    {
+                        ?>
+                        <li class="<?php echo trim($custom_field['field_name'], '_'); ?>">
+                            <?php echo $label . wp_get_attachment_image($property->{$custom_field['field_name']}); ?>
+                        </li>
+                        <?php
+                        }
                 }
                 elseif ( $custom_field['field_type'] == 'file' )
                 {
-                    if ( $property->{$custom_field['field_name']} != '' ) { ?><li class="<?php echo trim($custom_field['field_name'], '_'); ?>"><?php echo $custom_field['field_label']; echo ': <a href="' . wp_get_attachment_url($property->{$custom_field['field_name']}) . '" target="_blank">' . __( 'View', 'propertyhive' ) . '</a>'; ?></li><?php }
+                    if ( $property->{$custom_field['field_name']} != '' )
+                    {
+                        ?>
+                        <li class="<?php echo trim($custom_field['field_name'], '_'); ?>">
+                            <?php echo $label . '<a href="' . wp_get_attachment_url($property->{$custom_field['field_name']}) . '" target="_blank">' . __( 'View', 'propertyhive' ) . '</a>'; ?>
+                        </li>
+                        <?php
+                    }
                 }
                 else
                 {
-                    if ( $property->{$custom_field['field_name']} != '' ) { ?><li class="<?php echo trim($custom_field['field_name'], '_'); ?>"><?php echo $custom_field['field_label']; echo ': ' . $property->{$custom_field['field_name']}; ?></li><?php }
+                    if ( $property->{$custom_field['field_name']} != '' )
+                    {
+                        ?>
+                        <li class="<?php echo trim($custom_field['field_name'], '_'); ?>">
+                            <?php echo $label . $property->{$custom_field['field_name']}; ?>
+                        </li>
+                        <?php
+                    }
                 }
             }
         }
