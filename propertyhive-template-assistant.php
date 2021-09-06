@@ -2642,9 +2642,23 @@ final class PH_Template_Assistant {
                 {
                     if ( $property->{$custom_field['field_name']} != '' )
                     {
+                        $value = trim( $property->{$custom_field['field_name']} );
+
+                        // If the custom field value is an email address or a URL, automatically make it a link
+                        if ( apply_filters( 'propertyhive_auto_hyperlink_custom_fields', true ) )
+                        {
+                            if ( filter_var($value, FILTER_VALIDATE_URL) )
+                            {
+                                $value = '<a href="' . $value . '" target="_blank">' . $value . '</a>';
+                            }
+                            elseif ( filter_var($value, FILTER_VALIDATE_EMAIL) )
+                            {
+                                $value = '<a href="mailto:' . $value . '">' . $value . '</a>';
+                            }
+                        }
                         ?>
                         <li class="<?php echo trim($custom_field['field_name'], '_'); ?>">
-                            <?php echo $label . $property->{$custom_field['field_name']}; ?>
+                            <?php echo $label . $value; ?>
                         </li>
                         <?php
                     }
