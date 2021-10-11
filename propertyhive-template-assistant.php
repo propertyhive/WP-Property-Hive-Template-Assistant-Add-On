@@ -4464,6 +4464,7 @@ final class PH_Template_Assistant {
             'show_label' => true,
             'before' => '<div class="control control-keyword">'
         );
+        $all_fields = apply_filters( 'propertyhive_search_form_all_fields', $all_fields );
 
         $currencies = array(
             '' => '',
