@@ -458,13 +458,8 @@ final class PH_Template_Assistant {
                                             'id' => $custom_field['field_name'], 
                                             'label' => $custom_field['field_label'], 
                                             'desc_tip' => false,
-                                            'type' => 'text',
-                                            'class' => 'short date-picker',
-                                            'placeholder' => 'YYYY-MM-DD',
-                                            'custom_attributes' => array(
-                                                'maxlength' => 10,
-                                                'pattern' => "[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])"
-                                            )
+                                            'type' => 'date',
+                                            'class' => 'small',
                                         ), $thepostid ) );
                                     }
                                     elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'image' )
