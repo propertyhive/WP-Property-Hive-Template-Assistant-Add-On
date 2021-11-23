@@ -4075,7 +4075,7 @@ final class PH_Template_Assistant {
             <p><label for="blank_option_'.$id.'">Blank Option:</label> <input type="text" name="blank_option[' . $id . ']" id="blank_option_'.$id.'" value="' . ( ( isset($field['blank_option']) ) ? htmlentities($field['blank_option']) : __( 'No Preference', 'propertyhive' ) ) . '"></p>
             ';
 
-            if ( taxonomy_exists($id) && ( $id == 'property_type' || $id == 'commercial_property_type' || $id == 'location' ) )
+            if ( taxonomy_exists($id) && in_array( $id, apply_filters( 'propertyhive_template_assistant_multi_level_taxonomy_fields', array('property_type', 'commercial_property_type', 'location') ) ) )
             {
                 echo '
                 <p><label for="parent_terms_only_'.$id.'">Top-Level Terms Only:</label> <input type="checkbox" name="parent_terms_only[' . $id . ']" id="parent_terms_only_'.$id.'" value="yes"' . ( ( isset($field['parent_terms_only']) && $field['parent_terms_only'] === true ) ? ' checked' : '' ) . '></p>
@@ -4459,6 +4459,7 @@ final class PH_Template_Assistant {
             'show_label' => true,
             'before' => '<div class="control control-keyword">'
         );
+        $all_fields = apply_filters( 'propertyhive_search_form_all_fields', $all_fields );
 
         if ( get_option('propertyhive_features_type') == 'checkbox' )
         {
