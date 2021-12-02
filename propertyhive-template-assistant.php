@@ -3219,6 +3219,10 @@ final class PH_Template_Assistant {
                                 {
                                     $active_fields[$field_id]['parent_terms_only'] = true;
                                 }
+                                if ( isset($_POST['hide_empty'][$field_id]) && $_POST['hide_empty'][$field_id] != '' )
+                                {
+                                    $active_fields[$field_id]['hide_empty'] = true;
+                                }
                                 if ( isset($_POST['multiselect'][$field_id]) && $_POST['multiselect'][$field_id] != '' )
                                 {
                                     $active_fields[$field_id]['multiselect'] = true;
@@ -3272,6 +3276,10 @@ final class PH_Template_Assistant {
                                 if ( isset($_POST['parent_terms_only'][$field_id]) && $_POST['parent_terms_only'][$field_id] != '' )
                                 {
                                     $inactive_fields[$field_id]['parent_terms_only'] = true;
+                                }
+                                if ( isset($_POST['hide_empty'][$field_id]) && $_POST['hide_empty'][$field_id] != '' )
+                                {
+                                    $inactive_fields[$field_id]['hide_empty'] = true;
                                 }
                                 if ( isset($_POST['multiselect'][$field_id]) && $_POST['multiselect'][$field_id] != '' )
                                 {
@@ -4079,6 +4087,10 @@ final class PH_Template_Assistant {
             {
                 echo '
                 <p><label for="parent_terms_only_'.$id.'">Top-Level Terms Only:</label> <input type="checkbox" name="parent_terms_only[' . $id . ']" id="parent_terms_only_'.$id.'" value="yes"' . ( ( isset($field['parent_terms_only']) && $field['parent_terms_only'] === true ) ? ' checked' : '' ) . '></p>
+                ';
+
+                echo '
+                <p><label for="hide_empty_'.$id.'">Hide Terms With No Properties Assigned:</label> <input type="checkbox" name="hide_empty[' . $id . ']" id="hide_empty_'.$id.'" value="yes"' . ( ( isset($field['hide_empty']) && $field['hide_empty'] === true ) ? ' checked' : '' ) . '></p>
                 ';
             }
 
