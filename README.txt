@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=N68UH
 Requires at least: 3.8
 Tested up to: 5.8.2
 Stable tag: trunk
-Version: 1.0.49
+Version: 1.0.50
 Homepage: http://wp-property-hive.com/addons/template-assistant/
 
 This add on for Property Hive assists with the layout of property pages and more.
@@ -27,6 +27,9 @@ Once installed and activated, you can access the settings for this add on by nav
 Updating should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 1.0.50 =
+* Added option to hide property type and location terms in search dropdowns that have no properties assigned
 
 = 1.0.49 =
 * If a custom field is an email or URL, automatically make it a hyperlink
