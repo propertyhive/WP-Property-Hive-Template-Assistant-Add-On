@@ -4500,6 +4500,21 @@ final class PH_Template_Assistant {
             'options' => $currencies
         );
 
+        $date_added_days = array(
+            '' => __( 'No preference', 'propertyhive' ),
+            '1' => 'Last 24 Hours',
+            '3' => 'Last 3 Days',
+            '7' => 'Last 7 Days',
+            '14' => 'Last 14 Days',
+        );
+
+        $all_fields['date_added'] = array(
+            'type' => 'select',
+            'show_label' => true,
+            'label' => __( 'Date Added', 'propertyhive' ),
+            'options' => $date_added_days
+        );
+
         $form_controls = ph_get_search_form_fields();
         $active_fields = apply_filters( 'propertyhive_search_form_fields_' . $current_id, $form_controls );
 
