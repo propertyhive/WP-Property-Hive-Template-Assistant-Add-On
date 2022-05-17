@@ -3,9 +3,9 @@ Contributors: PropertyHive,BIOSTALL
 Tags: property hive, propertyhive
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=N68UHATHAEDLN&lc=GB&item_name=BIOSTALL&no_note=0&cn=Add%20special%20instructions%20to%20the%20seller%3a&no_shipping=1&currency_code=GBP&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Requires at least: 3.8
-Tested up to: 5.8.2
+Tested up to: 5.9.3
 Stable tag: trunk
-Version: 1.0.51
+Version: 1.0.52
 Homepage: http://wp-property-hive.com/addons/template-assistant/
 
 This add on for Property Hive assists with the layout of property pages and more.
@@ -28,6 +28,10 @@ Updating should work like a charm; as always though, ensure you backup your site
 
 == Changelog ==
 
+= 1.0.52 =
+* Added option to enable new dynamic cascading feature to the 'Location' field in search forms
+* Declare support for WordPress 5.9.3
+
 = 1.0.51 =
 * Added new 'Date Added' field to search forms allowing users to filter by properties added in the last X days
 
@@ -40,6 +44,7 @@ Updating should work like a charm; as always though, ensure you backup your site
 * Add filter 'propertyhive_search_form_all_fields' to allow third party plugin to add seach form fields
 * Use HTML date field instead of jQuery datepicker for custom fields of type date
 * Add search form field for Property Features when checkbox features are in use
+* Declare support for WordPress 5.8.2
 
 = 1.0.48 =
 * Added support for image and file additional fields when 'Display on Website' is selected
