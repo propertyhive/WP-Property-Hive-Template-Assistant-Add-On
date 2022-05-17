@@ -3219,6 +3219,10 @@ final class PH_Template_Assistant {
                                 {
                                     $active_fields[$field_id]['parent_terms_only'] = true;
                                 }
+                                if ( isset($_POST['dynamic_population'][$field_id]) && $_POST['dynamic_population'][$field_id] != '' )
+                                {
+                                    $active_fields[$field_id]['dynamic_population'] = true;
+                                }
                                 if ( isset($_POST['hide_empty'][$field_id]) && $_POST['hide_empty'][$field_id] != '' )
                                 {
                                     $active_fields[$field_id]['hide_empty'] = true;
@@ -3276,6 +3280,10 @@ final class PH_Template_Assistant {
                                 if ( isset($_POST['parent_terms_only'][$field_id]) && $_POST['parent_terms_only'][$field_id] != '' )
                                 {
                                     $inactive_fields[$field_id]['parent_terms_only'] = true;
+                                }
+                                if ( isset($_POST['dynamic_population'][$field_id]) && $_POST['dynamic_population'][$field_id] != '' )
+                                {
+                                    $inactive_fields[$field_id]['dynamic_population'] = true;
                                 }
                                 if ( isset($_POST['hide_empty'][$field_id]) && $_POST['hide_empty'][$field_id] != '' )
                                 {
@@ -4091,6 +4099,13 @@ final class PH_Template_Assistant {
 
                 echo '
                 <p><label for="hide_empty_'.$id.'">Hide Terms With No Properties Assigned:</label> <input type="checkbox" name="hide_empty[' . $id . ']" id="hide_empty_'.$id.'" value="yes"' . ( ( isset($field['hide_empty']) && $field['hide_empty'] === true ) ? ' checked' : '' ) . '></p>
+                ';
+            }
+
+            if ( taxonomy_exists($id) && in_array( $id, apply_filters( 'propertyhive_template_assistant_dynamic_population_taxonomy_fields', array('location') ) ) )
+            {
+                echo '
+                <p><label for="dynamic_population_'.$id.'">Dynamically Populate Cascading Dropdowns:</label> <input type="checkbox" name="dynamic_population[' . $id . ']" id="dynamic_population_'.$id.'" value="yes"' . ( ( isset($field['dynamic_population']) && $field['dynamic_population'] === true ) ? ' checked' : '' ) . '></p>
                 ';
             }
 
