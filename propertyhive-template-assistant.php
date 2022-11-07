@@ -4458,6 +4458,31 @@ final class PH_Template_Assistant {
             'before' => '<div class="control control-maximum_bathrooms residential-only">',
             'options' => $bathrooms
         );
+
+        $reception_rooms = array(
+            '' => __( 'No preference', 'propertyhive' ),
+            '1' => '1',
+            '2' => '2',
+            '3' => '3',
+            '4' => '4',
+            '5' => '5',
+        );
+
+        $all_fields['minimum_reception_rooms'] = array(
+            'type' => 'select',
+            'label' => __( 'Min Receptions', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-minimum_reception_rooms residential-only">',
+            'options' => $reception_rooms
+        );
+        $all_fields['maximum_reception_rooms'] = array(
+            'type' => 'select',
+            'label' => __( 'Max Receptions', 'propertyhive' ),
+            'show_label' => true,
+            'before' => '<div class="control control-maximum_reception_rooms residential-only">',
+            'options' => $reception_rooms
+        );
+
         $all_fields['bedrooms_slider'] = array(
             'type' => 'slider',
             'label' => __( 'Bedrooms', 'propertyhive' ),
