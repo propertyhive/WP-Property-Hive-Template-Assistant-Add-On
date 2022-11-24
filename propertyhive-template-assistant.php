@@ -258,6 +258,13 @@ final class PH_Template_Assistant {
 
                                 if ( $custom_field['field_type'] == 'multiselect' ) { $fields[$field_id]['type'] = 'select'; }
                             }
+
+                            if ( $custom_field['field_name'] == $field_id && $custom_field['field_type'] == 'checkbox' )
+                            {
+                                $fields[$field_id] = array(
+                                    'type' => 'checkbox'
+                                );
+                            }
                         }
                     }
 
@@ -460,6 +467,14 @@ final class PH_Template_Assistant {
                                             'desc_tip' => false,
                                             'type' => 'date',
                                             'class' => 'small',
+                                        ), $thepostid ) );
+                                    }
+                                    elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'checkbox' )
+                                    {
+                                        propertyhive_wp_checkbox( apply_filters( 'propertyhive_template_assistant_custom_field_args_' . ltrim($custom_field['field_name'], '_'), array( 
+                                            'id' => $custom_field['field_name'], 
+                                            'label' => $custom_field['field_label'], 
+                                            'desc_tip' => false,
                                         ), $thepostid ) );
                                     }
                                     elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'image' )
@@ -688,6 +703,14 @@ final class PH_Template_Assistant {
                                 </select>
                         <?php
                     }
+                    elseif ( isset($custom_field['field_type']) && $custom_field['field_type'] == 'checkbox' )
+                    {
+                        ?>
+                        <p class="form-field <?php echo $custom_field['field_name']; ?>_field<?php echo $display_class; ?>">
+                            <label for="<?php echo $custom_field['field_name']; ?>"><?php echo $custom_field['field_label']; ?></label>
+                            <input type="checkbox" id="<?php echo $custom_field['field_name']; ?>" name="<?php echo $custom_field['field_name']; ?>"<?php if ( isset($_POST[$custom_field['field_name']]) && $_POST[$custom_field['field_name']] == 'yes' ) { echo ' checked'; } ?>>
+                        <?php
+                    }
                 }
 
             }
@@ -826,6 +849,23 @@ final class PH_Template_Assistant {
 <?php
                             break;
                         }
+                        case "checkbox":
+                        {
+                            $options = array('' => '');
+                            foreach ($custom_field['dropdown_options'] as $dropdown_option)
+                            {
+                                $options[$dropdown_option] = ph_clean($dropdown_option);
+                            }
+
+                            propertyhive_wp_checkbox( array( 
+                                'id' => '_applicant' . $custom_field['field_name'] . '_' . $applicant_profile_id, 
+                                'label' => $custom_field['field_label'], 
+                                'desc_tip' => false, 
+                                'value' => ( ( isset($applicant_profile[$custom_field['field_name']]) && $applicant_profile[$custom_field['field_name']] == 'yes' ) ? 'yes' : '' ),
+                            ) );
+
+                            break;
+                        }
                     }
                 }
             }
@@ -848,6 +888,7 @@ final class PH_Template_Assistant {
                     {
                         case "select":
                         case "multiselect":
+                        case "checkbox":
                         {
                             if ( isset($_POST['_applicant' . $custom_field['field_name'] . '_' . $applicant_profile_id]) )
                             {
@@ -901,6 +942,17 @@ final class PH_Template_Assistant {
                                     $requirements[] = array(
                                         'label' => $custom_field['field_label'],
                                         'value' => implode(", ", $sliced_terms) . ( (count($applicant_profile[$custom_field['field_name']]) > 2) ? '<span title="' . addslashes( implode(", ", $applicant_profile[$custom_field['field_name']]) ) .'"> + ' . (count($applicant_profile[$custom_field['field_name']]) - 2) . ' more</span>' : '' )
+                                    );
+                                }
+                                break;
+                            }
+                            case "checkbox":
+                            {
+                                if ( $applicant_profile[$custom_field['field_name']] != '' )
+                                {
+                                    $requirements[] = array(
+                                        'label' => $custom_field['field_label'],
+                                        'value' => 'Yes',
                                     );
                                 }
                                 break;
@@ -962,6 +1014,17 @@ final class PH_Template_Assistant {
                                     }
                                     
                                     $args['meta_query'][] = $sub_meta_query;
+                                }
+                                break;
+                            }
+                            case "checkbox":
+                            {
+                                if ( $applicant_profile[$custom_field['field_name']] != '' )
+                                {
+                                    $args['meta_query'][] = array(
+                                        'key' => $custom_field['field_name'],
+                                        'value' => $applicant_profile[$custom_field['field_name']],
+                                    );
                                 }
                                 break;
                             }
@@ -1043,6 +1106,21 @@ final class PH_Template_Assistant {
                                     }
                                 }
 
+                                break;
+                            }
+                            case "checkbox":
+                            {
+                                if ( 
+                                    $applicant_profile[$custom_field['field_name']] == '' ||
+                                    $property->{$custom_field['field_name']} == $applicant_profile[$custom_field['field_name']]
+                                )
+                                {
+
+                                }
+                                else
+                                {
+                                    return false;
+                                }
                                 break;
                             }
                         }
@@ -1127,6 +1205,21 @@ final class PH_Template_Assistant {
 
                                     break;
                                 }
+                                case "checkbox":
+                                {
+                                    if ( 
+                                        $applicant_profile[$custom_field['field_name']] == '' ||
+                                        $_POST[$custom_field['field_name']] == $applicant_profile[$custom_field['field_name']]
+                                    )
+                                    {
+
+                                    }
+                                    else
+                                    {
+                                        return false;
+                                    }
+                                    break;
+                                }
                             }
                         }
                     }
@@ -1176,6 +1269,20 @@ final class PH_Template_Assistant {
 
                             break;
                         }
+                        case "checkbox":
+                        {
+                            $value = isset($applicant_profile[$custom_field['field_name']]) ? $applicant_profile[$custom_field['field_name']] : '';
+
+                            $form_controls[$custom_field['field_name']] = array(
+                                'type' => 'checkbox',
+                                'label' => $custom_field['field_label'],
+                                'required' => false,
+                                'show_label' => true,
+                                'value' => $value,
+                            );
+
+                            break;
+                        }
                     }
                 }
             }
@@ -1213,6 +1320,11 @@ final class PH_Template_Assistant {
                                 }
                             }
                             $applicant_profile[$custom_field['field_name']] = isset($_POST[$custom_field['field_name']]) ? $_POST[$custom_field['field_name']] : array();
+                            break;
+                        }
+                        case "checkbox":
+                        {
+                            $applicant_profile[$custom_field['field_name']] = isset($_POST[$custom_field['field_name']]) ? ph_clean($_POST[$custom_field['field_name']]) : '';
                             break;
                         }
                     }
@@ -4955,6 +5067,7 @@ final class PH_Template_Assistant {
                 'textarea' => 'Textarea',
                 'select' => 'Dropdown',
                 'multiselect' => 'Multi-Select',
+                'checkbox' => 'Checkbox',
                 'date' => 'Date',
                 'image' => 'Image',
                 'file' => 'File',
@@ -5115,7 +5228,7 @@ final class PH_Template_Assistant {
                     {
                         jQuery(\'#row_display_on_website\').show();
                         
-                        if ( jQuery(\'#field_type\').val() == \'select\' || jQuery(\'#field_type\').val() == \'multiselect\' )
+                        if ( jQuery(\'#field_type\').val() == \'select\' || jQuery(\'#field_type\').val() == \'multiselect\' || jQuery(\'#field_type\').val() == \'checkbox\' )
                         {
                             jQuery(\'#row_display_on_applicant_requirements\').show();
                         }
