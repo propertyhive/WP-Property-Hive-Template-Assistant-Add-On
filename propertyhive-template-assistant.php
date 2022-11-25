@@ -258,13 +258,6 @@ final class PH_Template_Assistant {
 
                                 if ( $custom_field['field_type'] == 'multiselect' ) { $fields[$field_id]['type'] = 'select'; }
                             }
-
-                            if ( $custom_field['field_name'] == $field_id && $custom_field['field_type'] == 'checkbox' )
-                            {
-                                $fields[$field_id] = array(
-                                    'type' => 'checkbox'
-                                );
-                            }
                         }
                     }
 
@@ -851,12 +844,6 @@ final class PH_Template_Assistant {
                         }
                         case "checkbox":
                         {
-                            $options = array('' => '');
-                            foreach ($custom_field['dropdown_options'] as $dropdown_option)
-                            {
-                                $options[$dropdown_option] = ph_clean($dropdown_option);
-                            }
-
                             propertyhive_wp_checkbox( array( 
                                 'id' => '_applicant' . $custom_field['field_name'] . '_' . $applicant_profile_id, 
                                 'label' => $custom_field['field_label'], 
@@ -888,11 +875,22 @@ final class PH_Template_Assistant {
                     {
                         case "select":
                         case "multiselect":
+                        {
+                            if ( isset($_POST['_applicant' . $custom_field['field_name'] . '_' . $applicant_profile_id]) )
+                            {
+                                $applicant_profile[$custom_field['field_name']] = ph_clean($_POST['_applicant' . $custom_field['field_name'] . '_' . $applicant_profile_id]);
+                            }
+                            break;
+                        }
                         case "checkbox":
                         {
                             if ( isset($_POST['_applicant' . $custom_field['field_name'] . '_' . $applicant_profile_id]) )
                             {
                                 $applicant_profile[$custom_field['field_name']] = ph_clean($_POST['_applicant' . $custom_field['field_name'] . '_' . $applicant_profile_id]);
+                            }
+                            else
+                            {
+                                $applicant_profile[$custom_field['field_name']] = '';
                             }
                             break;
                         }
@@ -919,6 +917,7 @@ final class PH_Template_Assistant {
                         switch ( $custom_field['field_type'] )
                         {
                             case "select":
+                            case "checkbox":
                             {
                                 if ( $applicant_profile[$custom_field['field_name']] != '' )
                                 {
@@ -942,17 +941,6 @@ final class PH_Template_Assistant {
                                     $requirements[] = array(
                                         'label' => $custom_field['field_label'],
                                         'value' => implode(", ", $sliced_terms) . ( (count($applicant_profile[$custom_field['field_name']]) > 2) ? '<span title="' . addslashes( implode(", ", $applicant_profile[$custom_field['field_name']]) ) .'"> + ' . (count($applicant_profile[$custom_field['field_name']]) - 2) . ' more</span>' : '' )
-                                    );
-                                }
-                                break;
-                            }
-                            case "checkbox":
-                            {
-                                if ( $applicant_profile[$custom_field['field_name']] != '' )
-                                {
-                                    $requirements[] = array(
-                                        'label' => $custom_field['field_label'],
-                                        'value' => 'Yes',
                                     );
                                 }
                                 break;
@@ -1019,12 +1007,41 @@ final class PH_Template_Assistant {
                             }
                             case "checkbox":
                             {
-                                if ( $applicant_profile[$custom_field['field_name']] != '' )
+                                if ( $custom_field['exact_match'] == '' )
                                 {
-                                    $args['meta_query'][] = array(
-                                        'key' => $custom_field['field_name'],
-                                        'value' => $applicant_profile[$custom_field['field_name']],
-                                    );
+                                    if ( $applicant_profile[$custom_field['field_name']] != '' )
+                                    {
+                                        $args['meta_query'][] = array(
+                                            'key' => $custom_field['field_name'],
+                                            'value' => $applicant_profile[$custom_field['field_name']],
+                                        );
+                                    }
+                                }
+                                else
+                                {
+                                    // should match exactly only
+                                    if ( $applicant_profile[$custom_field['field_name']] == 'yes' )
+                                    {
+                                        $args['meta_query'][] = array(
+                                            'key' => $custom_field['field_name'],
+                                            'value' => 'yes',
+                                        );
+                                    }
+                                    else
+                                    {
+                                        $args['meta_query'][] = array(
+                                            'relation' => 'OR',
+                                            array(
+                                                'key' => $custom_field['field_name'],
+                                                'value' => '',
+                                            ),
+                                            array(
+                                                'key' => $custom_field['field_name'],
+                                                'compare' => 'NOT EXISTS',
+                                            )
+                                        );
+
+                                    }
                                 }
                                 break;
                             }
@@ -1110,16 +1127,34 @@ final class PH_Template_Assistant {
                             }
                             case "checkbox":
                             {
-                                if ( 
-                                    $applicant_profile[$custom_field['field_name']] == '' ||
-                                    $property->{$custom_field['field_name']} == $applicant_profile[$custom_field['field_name']]
-                                )
+                                if ( $custom_field['exact_match'] == '' )
                                 {
+                                    // not exact match (i.e. pets allowed)
+                                    if ( 
+                                        $applicant_profile[$custom_field['field_name']] == '' ||
+                                        $property->{$custom_field['field_name']} == $applicant_profile[$custom_field['field_name']]
+                                    )
+                                    {
 
+                                    }
+                                    else
+                                    {
+                                        return false;
+                                    }
                                 }
                                 else
                                 {
-                                    return false;
+                                    // exact match
+                                    if (
+                                        $property->{$custom_field['field_name']} == $applicant_profile[$custom_field['field_name']]
+                                    )
+                                    {
+
+                                    }
+                                    else
+                                    {
+                                        return false;
+                                    }
                                 }
                                 break;
                             }
@@ -1207,16 +1242,34 @@ final class PH_Template_Assistant {
                                 }
                                 case "checkbox":
                                 {
-                                    if ( 
-                                        $applicant_profile[$custom_field['field_name']] == '' ||
-                                        $_POST[$custom_field['field_name']] == $applicant_profile[$custom_field['field_name']]
-                                    )
+                                    if ( $custom_field['exact_match'] == '' )
                                     {
+                                        // not exact match (i.e. pets allowed)
+                                        if ( 
+                                            $applicant_profile[$custom_field['field_name']] == '' ||
+                                            $property->{$custom_field['field_name']} == $applicant_profile[$custom_field['field_name']]
+                                        )
+                                        {
 
+                                        }
+                                        else
+                                        {
+                                            return false;
+                                        }
                                     }
                                     else
                                     {
-                                        return false;
+                                        // exact match
+                                        if (
+                                            $property->{$custom_field['field_name']} == $applicant_profile[$custom_field['field_name']]
+                                        )
+                                        {
+
+                                        }
+                                        else
+                                        {
+                                            return false;
+                                        }
                                     }
                                     break;
                                 }
@@ -2646,40 +2699,109 @@ final class PH_Template_Assistant {
             foreach ( $current_settings['custom_fields'] as $custom_field )
             {
                 if ( 
-                    isset( $_REQUEST[$custom_field['field_name']] ) && $_REQUEST[$custom_field['field_name']] != '' 
+                    $custom_field['meta_box'] == 'property_residential_sales_details' 
+                    ||
+                    $custom_field['meta_box'] == 'property_residential_lettings_details' 
+                    ||
+                    $custom_field['meta_box'] == 'property_commercial_details' 
                 )
                 {
+                    // this is a department specific field. Make sure department in question in being searched
+                    $meta_box_department = str_replace("property_", "", $custom_field['meta_box']);
+                    $meta_box_department = str_replace("_details", "", $meta_box_department);
+                    $meta_box_department = str_replace("_", "-", $meta_box_department);
+
                     if ( 
-                        ( $custom_field['field_type'] == 'select' || $custom_field['field_type'] == 'multiselect' ) &&
-                        is_array($_REQUEST[$custom_field['field_name']])
+                        isset( $_REQUEST['department'] ) && 
+                        ( $_REQUEST['department'] == $meta_box_department || ph_get_custom_department_based_on($_REQUEST['department']) == $meta_box_department )
                     )
                     {
-                        $sub_meta_query = array('relation' => 'OR');
-                        foreach ( $_REQUEST[$custom_field['field_name']] as $value )
-                        {
-                            $sub_meta_query[] = array(
-                                'key'     => $custom_field['field_name'],
-                                'value'   => ph_clean( $value ),
-                                'compare' => 'LIKE',
-                            );
-                        }
-                        $meta_query[] = $sub_meta_query;
-                    }
-                    elseif ( $custom_field['field_type'] == 'select' )
-                    {
-                        $meta_query[] = array(
-                            'key'     => $custom_field['field_name'],
-                            'value'   => ph_clean( $_REQUEST[$custom_field['field_name']] ),
-                            'compare' => '=',
-                        );
+
                     }
                     else
                     {
-                        $meta_query[] = array(
-                            'key'     => $custom_field['field_name'],
-                            'value'   => ph_clean( $_REQUEST[$custom_field['field_name']] ),
-                            'compare' => 'LIKE',
-                        );
+                        continue;
+                    }
+                }
+
+                if ( $custom_field['field_type'] == 'checkbox' )
+                {
+                    if ( $custom_field['exact_match'] == '' )
+                    {
+                        // not exact match (i.e. pets allowed)
+                        if ( isset($_REQUEST[$custom_field['field_name']]) && ph_clean( $_REQUEST[$custom_field['field_name']] ) == 'yes' )
+                        {
+                            $meta_query[] = array(
+                                'key'     => $custom_field['field_name'],
+                                'value'   => ph_clean( $_REQUEST[$custom_field['field_name']] ),
+                            );
+                        }
+                    }
+                    else
+                    {
+                        // should match exactly only (i.e. something only)
+                        if ( isset($_REQUEST[$custom_field['field_name']]) && ph_clean( $_REQUEST[$custom_field['field_name']] ) == 'yes' )
+                        {
+                            $meta_query[] = array(
+                                'key' => $custom_field['field_name'],
+                                'value' => 'yes',
+                            );
+                        }
+                        else
+                        {
+                            $meta_query[] = array(
+                                'relation' => 'OR',
+                                array(
+                                    'key' => $custom_field['field_name'],
+                                    'value' => '',
+                                ),
+                                array(
+                                    'key' => $custom_field['field_name'],
+                                    'compare' => 'NOT EXISTS',
+                                )
+                            );
+
+                        }
+                    }
+                }
+                else
+                {
+                    if ( 
+                        isset( $_REQUEST[$custom_field['field_name']] ) && $_REQUEST[$custom_field['field_name']] != '' 
+                    )
+                    {
+                        if ( 
+                            ( $custom_field['field_type'] == 'select' || $custom_field['field_type'] == 'multiselect' ) &&
+                            is_array($_REQUEST[$custom_field['field_name']])
+                        )
+                        {
+                            $sub_meta_query = array('relation' => 'OR');
+                            foreach ( $_REQUEST[$custom_field['field_name']] as $value )
+                            {
+                                $sub_meta_query[] = array(
+                                    'key'     => $custom_field['field_name'],
+                                    'value'   => ph_clean( $value ),
+                                    'compare' => 'LIKE',
+                                );
+                            }
+                            $meta_query[] = $sub_meta_query;
+                        }
+                        elseif ( $custom_field['field_type'] == 'select' )
+                        {
+                            $meta_query[] = array(
+                                'key'     => $custom_field['field_name'],
+                                'value'   => ph_clean( $_REQUEST[$custom_field['field_name']] ),
+                                'compare' => '=',
+                            );
+                        }
+                        else
+                        {
+                            $meta_query[] = array(
+                                'key'     => $custom_field['field_name'],
+                                'value'   => ph_clean( $_REQUEST[$custom_field['field_name']] ),
+                                'compare' => 'LIKE',
+                            );
+                        }
                     }
                 }
             }
@@ -3461,6 +3583,7 @@ final class PH_Template_Assistant {
                             'meta_box' => $_POST['meta_box'],
                             'display_on_website' => ( ( isset($_POST['display_on_website']) ) ? $_POST['display_on_website'] : '' ),
                             'display_on_applicant_requirements' => ( ( isset($_POST['display_on_applicant_requirements']) ) ? $_POST['display_on_applicant_requirements'] : '' ),
+                            'exact_match' => ( ( isset($_POST['exact_match']) ) ? $_POST['exact_match'] : '' ),
                             'display_on_user_details' => ( ( isset($_POST['display_on_user_details']) ) ? $_POST['display_on_user_details'] : '' ),
                             'admin_list' => ( ( isset($_POST['admin_list']) ) ? $_POST['admin_list'] : '' ),
                             'admin_list_sortable' => ( ( isset($_POST['admin_list_sortable']) ) ? $_POST['admin_list_sortable'] : '' ),
@@ -3476,6 +3599,7 @@ final class PH_Template_Assistant {
                             'meta_box' => $_POST['meta_box'],
                             'display_on_website' => ( ( isset($_POST['display_on_website']) ) ? $_POST['display_on_website'] : '' ),
                             'display_on_applicant_requirements' => ( ( isset($_POST['display_on_applicant_requirements']) ) ? $_POST['display_on_applicant_requirements'] : '' ),
+                            'exact_match' => ( ( isset($_POST['exact_match']) ) ? $_POST['exact_match'] : '' ),
                             'display_on_user_details' => ( ( isset($_POST['display_on_user_details']) ) ? $_POST['display_on_user_details'] : '' ),
                             'admin_list' => ( ( isset($_POST['admin_list']) ) ? $_POST['admin_list'] : '' ),
                             'admin_list_sortable' => ( ( isset($_POST['admin_list_sortable']) ) ? $_POST['admin_list_sortable'] : '' ),
@@ -4178,7 +4302,7 @@ final class PH_Template_Assistant {
         if ( isset($field['type']) && in_array($field['type'], array('text', 'email', 'date', 'number', 'password')) )
         {
             echo '
-            <p><label for="placeholder_'.$id.'">Placeholder:</label> <input type="text" name="placeholder[' . $id . ']" id="after_'.$id.'" value="' . ( ( isset($field['placeholder']) ) ? htmlentities($field['placeholder']) : '' ) . '"></p>
+            <p><label for="placeholder_'.$id.'">Placeholder:</label> <input type="text" name="placeholder[' . $id . ']" id="placeholder_'.$id.'" value="' . ( ( isset($field['placeholder']) ) ? htmlentities($field['placeholder']) : '' ) . '"></p>
             ';
         }
 
@@ -4675,8 +4799,28 @@ final class PH_Template_Assistant {
         {
             foreach ( $current_settings['custom_fields'] as $id => $custom_field )
             {
+                $field_type = 'text';
+                if ( isset($custom_field['field_type']) )
+                {
+                    switch ( $custom_field['field_type'] )
+                    {
+                        case 'select':
+                        case 'multiselect':
+                        {
+                            $field_type = 'select';
+                            break;
+                        }
+                        case 'checkbox':
+                        {
+                            $field_type = 'checkbox';
+                            break;
+                        }
+                    }
+                    
+                }
+
                 $all_fields[$custom_field['field_name']] = array(
-                    'type' => ( ( isset($custom_field['field_type']) && ( $custom_field['field_type'] == 'select' || $custom_field['field_type'] == 'multiselect' ) ) ? 'select' : 'text' ),
+                    'type' => $field_type,
                     'label' => $custom_field['field_label'],
                     'show_label' => true,
                     'before' => '<div class="control control-' . trim( $custom_field['field_name'], '_' ) . '">',
@@ -5172,6 +5316,14 @@ final class PH_Template_Assistant {
         }
 
         $settings[] = array(
+            'title' => __( 'Exact Match Only If Searching On Field', 'propertyhive' ),
+            'id'        => 'exact_match',
+            'default'   => ( (isset($custom_field_details['exact_match']) && $custom_field_details['exact_match'] == '1') ? 'yes' : ''),
+            'type'      => 'checkbox',
+            'desc'  =>  __( 'If you\'re using this checkbox in property searches or matches tick this if properties should only be returned with the same ticked status. Alternatively, leave unticked for scenarios like \'Pets Allowed\' whereby properties with it ticked should come back whether search is ticked or not, but not vice versa.', 'propertyhive' ),
+        );
+
+        $settings[] = array(
             'title' => __( 'Display On Registration Form / My Account', 'propertyhive' ),
             'id'        => 'display_on_user_details',
             'default'   => ( (isset($custom_field_details['display_on_user_details']) && $custom_field_details['display_on_user_details'] == '1') ? 'yes' : ''),
@@ -5220,6 +5372,7 @@ final class PH_Template_Assistant {
                     jQuery(\'#row_display_on_website\').hide();
                     jQuery(\'#row_display_on_applicant_requirements\').hide();
                     jQuery(\'#row_display_on_user_details\').hide();
+                    jQuery(\'#row_exact_match\').hide();
 
                     jQuery(\'#row_admin_list\').show();
                     jQuery(\'#row_admin_list_sortable\').show();
@@ -5231,6 +5384,11 @@ final class PH_Template_Assistant {
                         if ( jQuery(\'#field_type\').val() == \'select\' || jQuery(\'#field_type\').val() == \'multiselect\' || jQuery(\'#field_type\').val() == \'checkbox\' )
                         {
                             jQuery(\'#row_display_on_applicant_requirements\').show();
+                        }
+
+                        if ( jQuery(\'#field_type\').val() == \'checkbox\' )
+                        {
+                            jQuery(\'#row_exact_match\').show();
                         }
                     }
                     if ( meta_box.indexOf(\'contact_\') != -1 )
