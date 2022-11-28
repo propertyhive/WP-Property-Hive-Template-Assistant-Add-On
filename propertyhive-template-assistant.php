@@ -3498,10 +3498,39 @@ final class PH_Template_Assistant {
     {
         global $post;
 
-        if (!is_plugin_active('propertyhive/propertyhive.php'))
+        if ( !is_plugin_active('propertyhive/propertyhive.php') )
         {
             $message = __( "The Property Hive plugin must be installed and activated before you can use the Property Hive Template Assistant add-on", 'propertyhive' );
             echo "<div class=\"error\"> <p>$message</p></div>";
+        }
+        else
+        {
+            if ( version_compare(PH()->version, '1.5.44', '<') )
+            {
+                $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+                if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+                {
+                    foreach ( $current_settings['custom_fields'] as $custom_field )
+                    {
+                        // ensure if field is specific to department it's taken into account, else ignored
+                        if ( 
+                            $custom_field['meta_box'] == 'property_residential_details' 
+                            ||
+                            $custom_field['meta_box'] == 'property_residential_sales_details' 
+                            ||
+                            $custom_field['meta_box'] == 'property_residential_lettings_details' 
+                            ||
+                            $custom_field['meta_box'] == 'property_commercial_details' 
+                        )
+                        {
+                            $message = __( "You have department-specific <a href=\"" . admin_url('admin.php?page=ph-settings&tab=template-assistant&section=custom-fields') . "\">additional fields</a> setup. Please ensure you're running the latest version of Property Hive to support these", 'propertyhive' );
+                            echo "<div class=\"error\"> <p>$message</p></div>";
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 
