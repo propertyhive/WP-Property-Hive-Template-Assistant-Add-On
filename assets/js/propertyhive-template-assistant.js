@@ -23,7 +23,7 @@ function ph_template_assistant_set_image_heights()
 	if ( 
 		jQuery('.propertyhive ul.properties > li' ).eq(0).length > 0 &&
 		jQuery('.propertyhive ul.properties > li' ).eq(1).length > 0 &&
-		jQuery('.propertyhive ul.properties > li' ).eq(0).offset().top == jQuery('.propertyhive ul.properties > li' ).eq(1).offset().top
+		Math.round(jQuery('.propertyhive ul.properties > li' ).eq(0).offset().top) == Math.round(jQuery('.propertyhive ul.properties > li' ).eq(1).offset().top)
 	)
 	{
 		// Make the images the same height
@@ -42,7 +42,7 @@ function ph_template_assistant_set_image_heights()
 		{    
 	        var this_top = jQuery(this).offset().top;
 	        var this_height = jQuery(this).height();
-	        if (maxRowHeight != 0 && this_top != previousTop)
+	        if (maxRowHeight != 0 && Math.round(this_top) != Math.round(previousTop))
 	        {
 	            // we're on a new row
 	            jQuery(elements_in_row).each(function()
@@ -63,7 +63,7 @@ function ph_template_assistant_set_image_heights()
 
 	        elements_in_row.push(jQuery(this));
 
-	        previousTop = this_top;
+	        previousTop = Math.round(this_top);
 		});
 		jQuery(elements_in_row).each(function()
 	    {
