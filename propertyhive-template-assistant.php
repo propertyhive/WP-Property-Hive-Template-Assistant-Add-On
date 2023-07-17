@@ -3343,6 +3343,12 @@ final class PH_Template_Assistant {
             )
             {
                 wp_enqueue_script( 'ph-template-assistant' );
+
+                $params = array(
+                    'image_ratio' => 2 / 3,
+                );
+                $params = apply_filters( 'propertyhive_template_assistant_script_params', $params );
+                wp_localize_script( 'ph-template-assistant', 'ph_template_assistant', $params );
             }
         }
     }

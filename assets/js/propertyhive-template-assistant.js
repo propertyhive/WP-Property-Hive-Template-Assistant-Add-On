@@ -29,7 +29,7 @@ function ph_template_assistant_set_image_heights()
 		// Make the images the same height
 		jQuery('.propertyhive ul.properties > li .thumbnail img').each(function()
 		{
-			var ratio = 200 / 300;
+			var ratio = ph_template_assistant.image_ratio;
 			jQuery(this).height( jQuery(this).width() * ratio );
 		});
 
