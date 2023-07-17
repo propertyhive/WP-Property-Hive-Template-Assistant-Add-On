@@ -15,7 +15,7 @@ class Elementor_Property_Additional_Field_Widget extends \Elementor\Widget_Base 
 	}
 
 	public function get_icon() {
-		return 'fa fa-tag';
+		return 'eicon-meta-data';
 	}
 
 	public function get_categories() {
