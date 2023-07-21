@@ -3849,6 +3849,44 @@ final class PH_Template_Assistant {
 
                     $current_settings['custom_fields'] = $existing_custom_fields;
 
+                    // see if this custom field in used in search forms and amend the type accordingly
+                    if ( $current_section != 'addcustomfield' )
+                    {
+                        if ( isset($current_settings['search_forms']) && !empty($current_settings['search_forms']) )
+                        {
+                            foreach ( $current_settings['search_forms'] as $search_form_id => $search_form )
+                            {
+                                // Active fields
+                                if ( isset($search_form['active_fields']) && !empty($search_form['active_fields']) )
+                                {
+                                    foreach ( $search_form['active_fields'] as $field_id => $field_data )
+                                    {
+                                        if ( $field_name == $field_id )
+                                        {
+                                            // we found this field. Set type
+                                            $current_settings['search_forms'][$search_form_id]['active_fields'][$field_id]['type'] = ( ( isset($_POST['field_type']) && $_POST['field_type'] != '' ) ? $_POST['field_type'] : 'text' );
+                                        }
+                                    }
+                                }
+
+                                // Inactive fields
+                                if ( isset($search_form['inactive_fields']) && !empty($search_form['inactive_fields']) )
+                                {
+                                    foreach ( $search_form['inactive_fields'] as $field_id => $field_data )
+                                    {
+                                        if ( $field_name == $field_id )
+                                        {
+                                            // we found this field. Set type
+                                            $current_settings['search_forms'][$search_form_id]['inactive_fields'][$field_id]['type'] = ( ( isset($_POST['field_type']) && $_POST['field_type'] != '' ) ? $_POST['field_type'] : 'text' );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+
+
                     update_option( 'propertyhive_template_assistant', $current_settings );
 
                     break; 
