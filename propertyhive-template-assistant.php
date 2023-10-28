@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: Property Hive Template Assistant Add On
- * Plugin Uri: http://wp-property-hive.com/addons/template-assistant/
+ * Plugin Uri: https://wp-property-hive.com/addons/template-assistant/
  * Description: Add On for Property Hive which assists with the layout of property pages, the fields shown on search forms and allows you to manage additional fields on the property record.
  * Version: 1.0.54
  * Author: PropertyHive
- * Author URI: http://wp-property-hive.com
+ * Author URI: https://wp-property-hive.com
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
