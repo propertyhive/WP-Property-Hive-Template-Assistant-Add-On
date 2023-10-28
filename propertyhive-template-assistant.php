@@ -23,6 +23,16 @@ final class PH_Template_Assistant {
      * @var PropertyHive The single instance of the class
      */
     protected static $_instance = null;
+
+    /**
+     * @var string
+     */
+    public $id = '';
+
+    /**
+     * @var string
+     */
+    public $label = '';
     
     /**
      * Main Property Hive Template Assistant Instance
