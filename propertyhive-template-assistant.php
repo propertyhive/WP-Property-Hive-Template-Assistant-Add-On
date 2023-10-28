@@ -727,6 +727,53 @@ final class PH_Template_Assistant {
 
         add_filter( 'propertyhive_elementor_widgets', array( $this, 'additional_field_elementor_widget' ), 10 );
         add_filter( 'propertyhive_elementor_widget_directory', array( $this, 'additional_field_elementor_widget_dir' ), 10, 2 );
+
+        add_action( 'propertyhive_elementor_widget_property_image_controls', array( $this, 'elementor_widget_property_image_controls' ), 10 );
+        add_action( 'propertyhive_elementor_widget_property_image_render_after', array( $this, 'elementor_widget_property_image_render_after' ), 10, 2 );
+    }
+
+    public function elementor_widget_property_image_render_after( $settings, $property )
+    {
+        global $property;
+
+        if ( isset($settings['show_flag']) && $settings['show_flag'] == 'yes' )
+        {
+            $flag = $this->get_flag();
+
+            if ( $flag != '' )
+            {
+                $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+                echo '<div class="flag flag-' . sanitize_title($flag) . '" style="position:absolute; text-transform:uppercase; font-size:13px; box-sizing:border-box; padding:7px 20px; ' . $current_settings['flag_position'] . '; color:' . $current_settings['flag_text_color'] . '; background:' . $current_settings['flag_bg_color'] . ';">' . $flag . '</div>';
+            }
+        }
+    }
+
+    public function elementor_widget_property_image_controls( $widget )
+    {
+        $widget->add_control(
+            'show_flag',
+            [
+                'label' => __( 'Show Availability Flag', 'propertyhive' ),
+                'type' => \Elementor\Controls_Manager::SWITCHER,
+                'label_on' => __( 'Yes', 'propertyhive' ),
+                'label_off' => __( 'No', 'propertyhive' ),
+                'return_value' => 'yes',
+                'default' => '',
+            ]
+        );
+
+        $widget->add_control(
+            'flag_note',
+            [
+                'label' => __( '', 'propertyhive' ),
+                'type' => \Elementor\Controls_Manager::RAW_HTML,
+                'raw' => __( 'The flag shown will take its colour and position settings from the <a href="' . admin_url('admin.php?page=ph-settings&tab=template-assistant&section=flags') . '" target="_blank">Template Assistant Flags</a> settings area', 'propertyhive' ),
+                'condition' => [
+                    'show_flag' => 'yes',
+                ],
+            ]
+        );
     }
 
     public function add_office_additional_field_table_header_column()
