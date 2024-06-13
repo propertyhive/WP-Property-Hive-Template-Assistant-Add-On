@@ -33,6 +33,11 @@ final class PH_Template_Assistant {
      * @var string
      */
     public $label = '';
+
+    /**
+     * @var array
+     */
+    public $settings = array();
     
     /**
      * Main Property Hive Template Assistant Instance
