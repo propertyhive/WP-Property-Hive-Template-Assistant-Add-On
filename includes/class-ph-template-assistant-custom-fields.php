@@ -2944,7 +2944,7 @@ class PH_Template_Assistant_Custom_Fields {
         if ( $widget == 'Property Additional Field' )
         {
             $widget_dir = 'elementor-widgets';
-            $widget_dir = dirname(__FILE__) . "/includes/" . $widget_dir;
+            $widget_dir = dirname(__FILE__) . "/../includes/" . $widget_dir;
         }
 
         return $widget_dir;
