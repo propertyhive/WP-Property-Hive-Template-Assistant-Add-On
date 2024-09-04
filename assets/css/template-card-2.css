@@ -1,0 +1,37 @@
+.propertyhive ul.properties li {  }
+.propertyhive ul.properties li { padding:0 !important; margin-bottom:25px !important;  }
+.propertyhive ul.properties li .thumbnail { position:relative; margin:0 !important }
+.propertyhive ul.properties li .thumbnail .media-counts { border-radius:5px; position:absolute; bottom:15px; left:15px; background:rgba(0, 0, 0, 0.5); padding:5px; }
+.propertyhive ul.properties li .thumbnail .media-counts > div { height:15px; display:inline-block; margin:0 4px;  }
+.propertyhive ul.properties li .thumbnail .media-counts svg { height:15px; width:15px; }
+.propertyhive ul.properties li .details { padding:15px 25px 10px; }
+.propertyhive ul.properties li .details .price { font-weight:700; font-size:1.1em }
+.propertyhive ul.properties li .details .summary { font-size:0.9em }
+.propertyhive ul.properties li > a { height:100%; color:inherit; display:block; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25); transition:all 0.1s linear }
+.propertyhive ul.properties li > a:hover { box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+.propertyhive ul.properties li > a .details > * { margin:0 0 10px !important; padding:0 !important }
+.propertyhive ul.properties li .details .rooms .room { display:inline-block; margin-right:19px; position:relative; padding-left:28px; }
+.propertyhive ul.properties li .details .rooms .room .room-label { display: none; }
+.propertyhive ul.properties li .details .rooms .room::before { content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+.propertyhive ul.properties li .details .rooms .room.room-bedrooms::before {
+	transform: translateY(-38%);
+    background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pjxzdmcgdmlld0JveD0iMCAwIDY0MCA1MTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTE3NiAyNTZjNDQuMTEgMCA4MC0zNS44OSA4MC04MHMtMzUuODktODAtODAtODAtODAgMzUuODktODAgODAgMzUuODkgODAgODAgODB6bTM1Mi0xMjhIMzA0Yy04Ljg0IDAtMTYgNy4xNi0xNiAxNnYxNDRINjRWODBjMC04Ljg0LTcuMTYtMTYtMTYtMTZIMTZDNy4xNiA2NCAwIDcxLjE2IDAgODB2MzUyYzAgOC44NCA3LjE2IDE2IDE2IDE2aDMyYzguODQgMCAxNi03LjE2IDE2LTE2di00OGg1MTJ2NDhjMCA4Ljg0IDcuMTYgMTYgMTYgMTZoMzJjOC44NCAwIDE2LTcuMTYgMTYtMTZWMjQwYzAtNjEuODYtNTAuMTQtMTEyLTExMi0xMTJ6Ii8+PC9zdmc+');/
+}
+.propertyhive ul.properties li .details .rooms .room.room-bathrooms::before {
+    background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pjxzdmcgdmlld0JveD0iMCAwIDUxMiA1MTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTMyLDM4NGE5NS40LDk1LjQsMCwwLDAsMzIsNzEuMDlWNDk2YTE2LDE2LDAsMCwwLDE2LDE2aDMyYTE2LDE2LDAsMCwwLDE2LTE2VjQ4MEgzODR2MTZhMTYsMTYsMCwwLDAsMTYsMTZoMzJhMTYsMTYsMCwwLDAsMTYtMTZWNDU1LjA5QTk1LjQsOTUuNCwwLDAsMCw0ODAsMzg0VjMzNkgzMlpNNDk2LDI1Nkg4MFY2OS4yNWEyMS4yNiwyMS4yNiwwLDAsMSwzNi4yOC0xNWwxOS4yNywxOS4yNmMtMTMuMTMsMjkuODgtNy42MSw1OS4xMSw4LjYyLDc5LjczbC0uMTcuMTdBMTYsMTYsMCwwLDAsMTQ0LDE3NmwxMS4zMSwxMS4zMWExNiwxNiwwLDAsMCwyMi42MywwTDI4My4zMSw4MS45NGExNiwxNiwwLDAsMCwwLTIyLjYzTDI3Miw0OGExNiwxNiwwLDAsMC0yMi42MiwwbC0uMTcuMTdjLTIwLjYyLTE2LjIzLTQ5LjgzLTIxLjc1LTc5LjczLTguNjJMMTUwLjIyLDIwLjI4QTY5LjI1LDY5LjI1LDAsMCwwLDMyLDY5LjI1VjI1NkgxNkExNiwxNiwwLDAsMCwwLDI3MnYxNmExNiwxNiwwLDAsMCwxNiwxNkg0OTZhMTYsMTYsMCwwLDAsMTYtMTZWMjcyQTE2LDE2LDAsMCwwLDQ5NiwyNTZaIi8+PC9zdmc+');
+}
+.propertyhive ul.properties li .details .rooms .room.room-receptions::before {
+	transform: translateY(-38%);
+    background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pjxzdmcgdmlld0JveD0iMCAwIDY0MCA1MTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTE2MCAyMjR2NjRoMzIwdi02NGMwLTM1LjMgMjguNy02NCA2NC02NGgzMmMwLTUzLTQzLTk2LTk2LTk2SDE2MGMtNTMgMC05NiA0My05NiA5NmgzMmMzNS4zIDAgNjQgMjguNyA2NCA2NHptNDE2LTMyaC0zMmMtMTcuNyAwLTMyIDE0LjMtMzIgMzJ2OTZIMTI4di05NmMwLTE3LjctMTQuMy0zMi0zMi0zMkg2NGMtMzUuMyAwLTY0IDI4LjctNjQgNjQgMCAyMy42IDEzIDQ0IDMyIDU1LjFWNDMyYzAgOC44IDcuMiAxNiAxNiAxNmg2NGM4LjggMCAxNi03LjIgMTYtMTZ2LTE2aDM4NHYxNmMwIDguOCA3LjIgMTYgMTYgMTZoNjRjOC44IDAgMTYtNy4yIDE2LTE2VjMxMS4xYzE5LTExLjEgMzItMzEuNSAzMi01NS4xIDAtMzUuMy0yOC43LTY0LTY0LTY0eiIvPjwvc3ZnPg==');
+}
+
+.propertyhive ul.properties li .details .actions a { display:inline-block; }

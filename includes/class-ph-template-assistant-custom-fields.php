@@ -3269,7 +3269,7 @@ class PH_Template_Assistant_Custom_Fields {
                 }
                 else
                 {
-                    if ( $property->{$custom_field['field_name']} != '' )
+                    if ( $property->{$custom_field['field_name']} != '' && is_string($property->{$custom_field['field_name']}) )
                     {
                         $value = trim( $property->{$custom_field['field_name']} );
 

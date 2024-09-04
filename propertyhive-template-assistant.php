@@ -688,6 +688,8 @@ final class PH_Template_Assistant {
                 'search_result_default_order' => $_POST['search_result_default_order'],
                 'search_result_columns' => $_POST['search_result_columns'],
                 'search_result_layout' => $_POST['search_result_layout'],
+                'search_result_template_list' => $_POST['search_result_template_list'],
+                'search_result_template_card' => $_POST['search_result_template_card'],
                 'search_result_fields' => $search_results_fields,
                 'search_result_image_size' => ( isset($_POST['search_result_image_size']) ? $_POST['search_result_image_size'] : 'medium' ),
                 'search_result_css' => stripslashes($_POST['search_result_css']),

@@ -10,6 +10,7 @@ class PH_Template_Assistant_Search_Results {
 
 		add_filter( 'loop_search_results_per_page',  array( $this, 'template_assistant_loop_search_results_per_page' ) );
         add_filter( 'loop_search_results_columns', array( $this, 'template_assistant_search_result_columns' ) );
+        add_filter( 'honeycomb_loop_columns', array( $this, 'template_assistant_search_result_columns' ) );
         add_filter( 'post_class', array( $this, 'template_assistant_property_columns_post_class'), 20, 3 );
 
         if ( isset($current_settings['search_result_default_order']) && $current_settings['search_result_default_order'] != '' )
@@ -26,7 +27,151 @@ class PH_Template_Assistant_Search_Results {
         {
             add_filter( 'property_search_results_thumbnail_size', array( $this, 'search_result_image_size_changes' ) );
         }
+
+        // template specific function
+        add_filter( 'ph_get_template_part', array( $this, 'template_loader' ), 10, 3 );
+        add_action( 'wp_enqueue_scripts', array( $this, 'load_template_assistant_template_styles' ) );
+        add_action( 'wp_enqueue_scripts', array( $this, 'load_template_assistant_template_styles' ) );
 	}
+
+    public function load_template_assistant_template_styles()
+    {
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        $suffix = '';
+        $plugin_url = plugins_url( '', dirname( __FILE__ ) );
+        $assets_path = untrailingslashit( str_replace( array( 'http:', 'https:' ), '', $plugin_url ) ) . '/assets/';
+
+        if ( isset($current_settings['search_result_layout']) )
+        {
+            if ( $current_settings['search_result_layout'] == '1' )
+            {
+                // List
+                if ( isset($current_settings['search_result_template_list']) && !empty($current_settings['search_result_template_list']) )
+                {
+                    wp_enqueue_style( 'propertyhive_template_assistant_template_', $assets_path . 'css/template-list-' . (int)$current_settings['search_result_template_list'] . $suffix . '.css', array(), PH_TEMPLATE_ASSISTANT_VERSION );
+                }
+            }
+
+            if ( $current_settings['search_result_layout'] == '2' )
+            {
+                // Card
+                if ( isset($current_settings['search_result_template_card']) && !empty($current_settings['search_result_template_card']) )
+                {
+                    wp_enqueue_style( 'propertyhive_template_assistant_template_', $assets_path . 'css/template-card-' . (int)$current_settings['search_result_template_card'] . $suffix . '.css', array(), PH_TEMPLATE_ASSISTANT_VERSION );
+                }
+            }
+        }
+    }
+
+    public function template_loader( $template, $slug, $name )
+    {
+        // NEED TO CATER FOR ALL TEMPLATES, NOT JUST content-property, but also content-property-featured etc
+        // MAYBE ADD FILTERS
+
+        if ( $slug == 'content' && $name == 'property' )
+        {
+            // Loading the content-property.php template
+
+            $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+            if ( isset($current_settings['search_result_layout']) )
+            {
+                if ( $current_settings['search_result_layout'] == '1' )
+                {
+                    // List
+                    if ( isset($current_settings['search_result_template_list']) && !empty($current_settings['search_result_template_list']) )
+                    {
+                        // Need to load custom template
+                        /*if ( file_exists( dirname(PH_TEMPLATE_ASSISTANT_PLUGIN_FILE) . "/templates/{$slug}-{$name}-list-{$current_settings['search_result_template_card']}.php" ) ) {
+                            $template = dirname(PH_TEMPLATE_ASSISTANT_PLUGIN_FILE) . "/templates/{$slug}-{$name}-list-{$current_settings['search_result_template_card']}.php";
+                        }*/
+                    }
+                }
+
+                if ( $current_settings['search_result_layout'] == '2' )
+                {
+                    if ( isset($current_settings['search_result_template_card']) && !empty($current_settings['search_result_template_card']) )
+                    {
+                        // Need to load custom template
+                        if ( file_exists( dirname(PH_TEMPLATE_ASSISTANT_PLUGIN_FILE) . "/templates/{$slug}-{$name}-card.php" ) )
+                        {
+                            add_action( 'propertyhive_before_search_results_loop_item_title', array( $this, 'media_counts' ), 1 );
+
+                            if ( has_action( 'propertyhive_after_search_results_loop_item_title', 'propertyhive_template_loop_actions' ) !== false ) 
+                            {
+                                for ( $priority = 0; $priority <= 100; ++$priority ) 
+                                {
+                                    remove_action( 'propertyhive_after_search_results_loop_item_title', 'propertyhive_template_loop_actions', $priority );
+                                }
+                            }
+
+                            $template = dirname(PH_TEMPLATE_ASSISTANT_PLUGIN_FILE) . "/templates/{$slug}-{$name}-card.php";
+                        }
+                    }
+                }
+            }
+        }
+
+        return $template;
+    }
+
+    public function media_counts()
+    {
+        global $property;
+
+        $images = array();
+        if ( get_option('propertyhive_images_stored_as', '') == 'urls' )
+        {
+            if ( !empty($property->photo_urls) )
+            {
+                $images = $property->photo_urls;
+            }
+        }
+        else
+        {
+            if ( !empty($property->photos) )
+            {
+                $images = $property->photos;
+            }
+        }
+
+        $floorplans = array();
+        if ( get_option('propertyhive_floorplans_stored_as', '') == 'urls' )
+        {
+            if ( !empty($property->floorplan_urls) )
+            {
+                $floorplans = $property->floorplan_urls;
+            }
+        }
+        else
+        {
+            if ( !empty($property->floorplans) )
+            {
+                $floorplans = $property->floorplans;
+            }
+        }
+
+        $virtual_tours = $property->get_virtual_tours();
+
+        if ( !empty($images) || !empty($floorplans) || !empty($virtual_tours) )
+        {
+            echo '<div class="media-counts">';
+            if ( !empty($floorplans) )
+            {
+                echo '<div><svg fill="none" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg"><path d="M10 .5h4.5v14H.5V.5h4l3 2m-1 12v-7M4 7.5h5m3 0h2.5" stroke="#ffffff" class="stroke-000000"></path></svg></div>';
+            }
+            if ( !empty($virtual_tours) )
+            {
+                echo '<div><svg fill="none" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg"><path d="m6.5 5.5.248-.434A.5.5 0 0 0 6 5.5h.5Zm0 4H6a.5.5 0 0 0 .748.434L6.5 9.5Zm3.5-2 .248.434a.5.5 0 0 0 0-.868L10 7.5ZM7.5 14A6.5 6.5 0 0 1 1 7.5H0A7.5 7.5 0 0 0 7.5 15v-1ZM14 7.5A6.5 6.5 0 0 1 7.5 14v1A7.5 7.5 0 0 0 15 7.5h-1ZM7.5 1A6.5 6.5 0 0 1 14 7.5h1A7.5 7.5 0 0 0 7.5 0v1Zm0-1A7.5 7.5 0 0 0 0 7.5h1A6.5 6.5 0 0 1 7.5 1V0ZM6 5.5v4h1v-4H6Zm.748 4.434 3.5-2-.496-.868-3.5 2 .496.868Zm3.5-2.868-3.5-2-.496.868 3.5 2 .496-.868Z" fill="#ffffff" class="fill-000000"></path></svg></div>';
+            }
+            if ( !empty($images) )
+            {
+                echo '<div><svg fill="none" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg"><path d="m4.5 3.5.354-.354a.5.5 0 0 0-.708 0L4.5 3.5ZM1.5 1h12V0h-12v1Zm12.5.5v12h1v-12h-1ZM13.5 14h-12v1h12v-1ZM1 13.5v-12H0v12h1Zm.5.5a.5.5 0 0 1-.5-.5H0A1.5 1.5 0 0 0 1.5 15v-1Zm12.5-.5a.5.5 0 0 1-.5.5v1a1.5 1.5 0 0 0 1.5-1.5h-1ZM13.5 1a.5.5 0 0 1 .5.5h1A1.5 1.5 0 0 0 13.5 0v1Zm-12-1A1.5 1.5 0 0 0 0 1.5h1a.5.5 0 0 1 .5-.5V0Zm-1 11h14v-1H.5v1Zm.354-3.146 4-4-.708-.708-4 4 .708.708Zm3.292-4 7 7 .708-.708-7-7-.708.708ZM10.5 5a.5.5 0 0 1-.5-.5H9A1.5 1.5 0 0 0 10.5 6V5Zm.5-.5a.5.5 0 0 1-.5.5v1A1.5 1.5 0 0 0 12 4.5h-1Zm-.5-.5a.5.5 0 0 1 .5.5h1A1.5 1.5 0 0 0 10.5 3v1Zm0-1A1.5 1.5 0 0 0 9 4.5h1a.5.5 0 0 1 .5-.5V3Z" fill="#ffffff" class="fill-000000"></path></svg></div>';
+            }
+            echo '</div>';
+        }
+    }
 
 	/**
      * Get template assistant settings
@@ -77,6 +222,78 @@ class PH_Template_Assistant_Search_Results {
                 '1' => 'List Layout 1 (default)',
                 '2' => 'List Layout 2 (card)',
             )
+        );
+
+        // Layouts - List
+        $layouts = array(
+            '1' => array(
+                'name' => 'Simple',
+                'thumbnail' => '',
+            ),
+            '2' => array(
+                'name' => 'Multi-Picture',
+                'thumbnail' => '',
+            )
+        );
+
+        $html = '<style type="text/css">
+            #row_search_result_template_list {  }
+            #row_search_result_template_list .layouts {  }
+            #row_search_result_template_list .layouts .layout { display:inline-block; margin-right:20px; }
+            #row_search_result_template_list .layouts .layout input[type="radio"] { display:none; }
+            #row_search_result_template_list .layouts .layout label { border:1px solid #CCC; padding:10px; cursor:pointer; }
+            #row_search_result_template_list .layouts .layout  input[type="radio"]:checked + label { box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25); border-color: #2271b1; }
+        </style>';
+
+        $html .= '<div class="layouts">';
+            $html .= '<div class="layout no-layout"><input type="radio" name="search_result_template_list" id="search_result_template_list_none" value=""' . ( ( !isset($current_settings['search_result_template_list']) || (isset($current_settings['search_result_template_list']) && $current_settings['search_result_template_list'] == '' ) ) ? ' checked' : '' ) . '><label for="search_result_template_list_none"><img src="" alt=""></label></div>';
+            foreach ( $layouts as $i => $layout )
+            {
+                $html .= '<div class="layout"><input type="radio" name="search_result_template_list" id="search_result_template_list_' . $i . '" value="' . $i . '"' . ( (isset($current_settings['search_result_template_list']) && $current_settings['search_result_template_list'] == $i ) ? ' checked' : '' ) . '><label for="search_result_template_list_' . $i . '"><img src="' . $layout['thumbnail'] . '" alt=""></label></div>';
+            }
+        $html .= '</div>';
+
+        $settings[] = array(
+            'title' => __( 'Template', 'propertyhive' ),
+            'id'        => 'search_result_template_list',
+            'type'      => 'html',
+            'html' => $html
+        );
+
+        // Layouts - Card
+        $layouts = array(
+            '1' => array(
+                'name' => 'Simple',
+                'thumbnail' => '',
+            ),
+            '2' => array(
+                'name' => 'Multi-Picture',
+                'thumbnail' => '',
+            )
+        );
+
+        $html = '<style type="text/css">
+            #row_search_result_template_card {  }
+            #row_search_result_template_card .layouts {  }
+            #row_search_result_template_card .layouts .layout { display:inline-block; margin-right:20px; }
+            #row_search_result_template_card .layouts .layout input[type="radio"] { display:none; }
+            #row_search_result_template_card .layouts .layout label { border:1px solid #CCC; padding:10px; cursor:pointer; }
+            #row_search_result_template_card .layouts .layout  input[type="radio"]:checked + label { box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25); border-color: #2271b1; }
+        </style>';
+
+        $html .= '<div class="layouts">';
+            $html .= '<div class="layout no-layout"><input type="radio" name="search_result_template_card" id="search_result_template_card_none" value=""' . ( ( !isset($current_settings['search_result_template_card']) || (isset($current_settings['search_result_template_card']) && $current_settings['search_result_template_card'] == '' ) ) ? ' checked' : '' ) . '><label for="search_result_template_card_none"><img src="" alt=""></label></div>';
+            foreach ( $layouts as $i => $layout )
+            {
+                $html .= '<div class="layout"><input type="radio" name="search_result_template_card" id="search_result_template_card_' . $i . '" value="' . $i . '"' . $i . '"' . ( (isset($current_settings['search_result_template_card']) && $current_settings['search_result_template_card'] == $i ) ? ' checked' : '' ) . '><label for="search_result_template_card_' . $i . '"><img src="' . $layout['thumbnail'] . '" alt=""></label></div>';
+            }
+        $html .= '</div>';
+
+        $settings[] = array(
+            'title' => __( 'Template', 'propertyhive' ),
+            'id'        => 'search_result_template_card',
+            'type'      => 'html',
+            'html'      => $html
         );
 
         $search_result_fields = array( 'price', 'floor_area', 'summary', 'actions' );
@@ -195,7 +412,31 @@ class PH_Template_Assistant_Search_Results {
                         //$(\'#active_fields_order\').val( fields_order.join("|") );
                     }
                 });
+
+                ph_show_template_rows();
+
+                jQuery(\'#search_result_layout\').change(function()
+                {
+                    ph_show_template_rows();
+                });
             });
+
+            function ph_show_template_rows()
+            {
+                var layout = jQuery(\'#search_result_layout\').val();
+
+                jQuery(\'#row_search_result_template_list\').hide();
+                jQuery(\'#row_search_result_template_card\').hide();
+
+                if ( layout == \'1\' ) // List
+                {
+                    jQuery(\'#row_search_result_template_list\').show();
+                }
+                if ( layout == \'2\' ) // Card
+                {
+                    jQuery(\'#row_search_result_template_card\').show();
+                }
+            }
         </script>';
 
         $settings[] = array(
@@ -331,7 +572,7 @@ class PH_Template_Assistant_Search_Results {
     {
         $current_settings = get_option( 'propertyhive_template_assistant', array() );
 
-        if ( isset($current_settings['search_result_columns']) && in_array($current_settings['search_result_columns'], array(3,4)) )
+        if ( isset($current_settings['search_result_columns']) && in_array((int)$current_settings['search_result_columns'], array(3,4)) )
         {
             return 12;
         }
@@ -339,37 +580,13 @@ class PH_Template_Assistant_Search_Results {
         return $cols;
     }
 
-    private function search_results_layout_actions()
-    {
-        $current_settings = get_option( 'propertyhive_template_assistant', array() );
-
-        if ( isset($current_settings['search_result_layout']) )
-        {
-            switch ( $current_settings['search_result_layout'] )
-            {
-                // Normal layout
-                case "1":
-                {
-
-                    break;
-                }
-                // Card layout 1 (thumbnail above details)
-                case "2":
-                {
-
-                    break;
-                }
-            }
-        }
-    }
-
     public function template_assistant_search_result_columns( $cols = 1 )
     {
         $current_settings = get_option( 'propertyhive_template_assistant', array() );
 
-        if ( isset($current_settings['search_result_columns']) && in_array($current_settings['search_result_columns'], array(1,2,3,4)) )
+        if ( isset($current_settings['search_result_columns']) && in_array((int)$current_settings['search_result_columns'], array(1,2,3,4)) )
         {
-            return $current_settings['search_result_columns'];
+            return (int)$current_settings['search_result_columns'];
         }
 
         return 1;
@@ -398,24 +615,6 @@ class PH_Template_Assistant_Search_Results {
         }
 
         return $classes;
-    }
-
-    public function template_assistant_search_result_template( $template, $slug, $name )
-    {
-        $current_settings = get_option( 'propertyhive_template_assistant', array() );
-
-        if ( 
-            isset($current_settings['search_result_layout']) && 
-            $current_settings['search_result_layout'] != '' &&
-            $slug == 'content' &&
-            $name == 'property'&&
-            file_exists(PH_TEMPLATE_ASSISTANT_PLUGIN_FILE . '/templates/content-property/' . $current_settings['search_result_layout'] . '.php')
-        )
-        {
-            $template = dirname( PH_TEMPLATE_ASSISTANT_PLUGIN_FILE ) . '/templates/content-property/' . $current_settings['search_result_layout'] . '.php';
-        }
-
-        return $template;
     }
 
     public function template_assistant_change_default_order()
