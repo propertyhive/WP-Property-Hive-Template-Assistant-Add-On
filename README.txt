@@ -3,7 +3,7 @@ Contributors: PropertyHive,BIOSTALL
 Tags: property hive, propertyhive
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=N68UHATHAEDLN&lc=GB&item_name=BIOSTALL&no_note=0&cn=Add%20special%20instructions%20to%20the%20seller%3a&no_shipping=1&currency_code=GBP&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Requires at least: 3.8
-Tested up to: 6.3.2
+Tested up to: 6.7.1
 Stable tag: trunk
 Version: 1.0.55
 Homepage: http://wp-property-hive.com/addons/template-assistant/
