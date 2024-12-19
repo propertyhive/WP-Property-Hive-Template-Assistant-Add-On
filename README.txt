@@ -1,12 +1,11 @@
 === PropertyHive Template Assistant ===
 Contributors: PropertyHive,BIOSTALL
 Tags: property hive, propertyhive
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=N68UHATHAEDLN&lc=GB&item_name=BIOSTALL&no_note=0&cn=Add%20special%20instructions%20to%20the%20seller%3a&no_shipping=1&currency_code=GBP&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Requires at least: 3.8
 Tested up to: 6.7.1
 Stable tag: trunk
-Version: 1.0.55
-Homepage: http://wp-property-hive.com/addons/template-assistant/
+Version: 1.0.56
+Homepage: https://wp-property-hive.com/addons/template-assistant/
 
 This add on for Property Hive assists with the layout of property pages and more.
 
@@ -27,6 +26,10 @@ Once installed and activated, you can access the settings for this add on by nav
 Updating should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 1.0.56 =
+* Added support for latest version of Elementor where they've deprecated schemes
+* Declare support for WordPress 6.7.1
 
 = 1.0.55 =
 * Added setting to Elementor 'Property Image' widget to show the flag
