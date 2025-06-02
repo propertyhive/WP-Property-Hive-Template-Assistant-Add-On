@@ -5589,6 +5589,8 @@ final class PH_Template_Assistant {
             $options['property_commercial_details'] = __( 'Property Commercial Details', 'propertyhive' );
         }
 
+        $options['property_marketing'] = __( 'Property Marketing', 'propertyhive' );
+
         if ( get_option('propertyhive_module_disabled_contacts', '') != 'yes' )
         {
             $options['contact_correspondence_address'] = __( 'Contact Correspondence Address', 'propertyhive' );
