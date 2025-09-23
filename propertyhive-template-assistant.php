@@ -4662,6 +4662,13 @@ final class PH_Template_Assistant {
             ';
         }
 
+        if ( isset($field['type']) && in_array($field['type'], array('office')) )
+        {
+            echo '
+            <p><label for="blank_option_'.$id.'">Blank Option:</label> <input type="text" name="blank_option[' . $id . ']" id="blank_option_'.$id.'" value="' . ( ( isset($field['blank_option']) ) ? htmlentities($field['blank_option']) : __( 'No Preference', 'propertyhive' ) ) . '"></p>
+            ';
+        }
+
         if ( taxonomy_exists($id) || ( isset($field['custom_field']) && $field['custom_field'] === true && $field['type'] == 'select' ) )
         {
             echo '
