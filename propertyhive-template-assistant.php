@@ -3049,7 +3049,7 @@ final class PH_Template_Assistant {
                                 $sub_meta_query[] = array(
                                     'key'     => $custom_field['field_name'],
                                     'value'   => ph_clean( $value ),
-                                    'compare' => 'LIKE',
+                                    'compare' => '=',
                                 );
                             }
                             $meta_query[] = $sub_meta_query;
