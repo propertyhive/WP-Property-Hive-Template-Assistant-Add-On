@@ -735,6 +735,52 @@ final class PH_Template_Assistant {
 
         add_action( 'propertyhive_elementor_widget_property_image_controls', array( $this, 'elementor_widget_property_image_controls' ), 10 );
         add_action( 'propertyhive_elementor_widget_property_image_render_after', array( $this, 'elementor_widget_property_image_render_after' ), 10, 2 );
+
+        add_filter( 'propertyhive_property_import_field_mapping_propertyhive_fields', array( $this, 'add_additional_fields_to_import_field_rule_fields' ) );
+    }
+
+    public function add_additional_fields_to_import_field_rule_fields( $fields )
+    {
+        $current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        if ( isset($current_settings['custom_fields']) && !empty($current_settings['custom_fields']) )
+        {
+            foreach ( $current_settings['custom_fields'] as $custom_field )
+            {
+                switch ( $custom_field['field_type'] )
+                {
+                    case "text":
+                    case "textarea":
+                    {
+                        $fields[$custom_field['field_name']] = array(
+                            'type'    => 'meta',
+                            'label'   => __( $custom_field['field_label'], 'propertyhive' ) . ' (Additional Field)',
+                        );
+                        break;
+                    }
+                    case "select":
+                    case "multiselect":
+                    {
+                        $options = array();
+                        if ( !empty($custom_field['dropdown_options']) )
+                        {
+                            foreach ( $custom_field['dropdown_options'] as $dropdown_option )
+                            {
+                                $options[$dropdown_option] = $dropdown_option;
+                            }
+                        }
+                        $fields[$custom_field['field_name']] = array(
+                            'type'    => 'meta',
+                            'label'   => __( $custom_field['field_label'], 'propertyhive' ) . ' (Additional Field)',
+                            'options' => $options
+                        );
+                        break;
+                    }
+                }
+            }
+        }
+
+        return $fields;
     }
 
     public function elementor_widget_property_image_render_after( $settings, $property )
