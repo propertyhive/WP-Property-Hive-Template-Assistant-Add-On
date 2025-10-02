@@ -2,9 +2,9 @@
 Contributors: PropertyHive,BIOSTALL
 Tags: property hive, propertyhive
 Requires at least: 3.8
-Tested up to: 6.7.1
+Tested up to: 6.8.3
 Stable tag: trunk
-Version: 1.0.56
+Version: 1.0.57
 Homepage: https://wp-property-hive.com/addons/template-assistant/
 
 This add on for Property Hive assists with the layout of property pages and more.
@@ -26,6 +26,13 @@ Once installed and activated, you can access the settings for this add on by nav
 Updating should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 1.0.57 =
+* Ensure any additional fields created show as fields to select when creating field rules on a property import
+* Allow additional fields to be added to a property's 'Marketing' tab
+* Add ability to set a 'blank option' on office field when adding to search forms
+* Improved search surrounding additional fields of type 'select' or 'multiselect' when used in search forms
+* Declare support for WordPress 6.8.3
 
 = 1.0.56 =
 * Added support for latest version of Elementor where they've deprecated schemes
