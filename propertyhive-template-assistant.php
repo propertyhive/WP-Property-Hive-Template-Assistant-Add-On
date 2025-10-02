@@ -3097,6 +3097,11 @@ final class PH_Template_Assistant {
                                     'value'   => ph_clean( $value ),
                                     'compare' => '=',
                                 );
+                                $sub_meta_query[] = array(
+                                    'key'     => $custom_field['field_name'],
+                                    'value'   => '"' . ph_clean( $value ) . '"',
+                                    'compare' => 'LIKE',
+                                );
                             }
                             $meta_query[] = $sub_meta_query;
                         }
