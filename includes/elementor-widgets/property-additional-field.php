@@ -48,6 +48,13 @@ class Elementor_Property_Additional_Field_Widget extends \Elementor\Widget_Base 
             	$options[$custom_field['field_name']] = __( $custom_field['field_label'], 'propertyhive' );
             }
         }
+        foreach ( $custom_fields as $custom_field )
+        {
+            if ( substr($custom_field['meta_box'], 0, 7) == 'office_' )
+            {
+            	$options['office-' . $custom_field['field_name']] = __( $custom_field['field_label'], 'propertyhive' ) . ' (' . __( 'Office custom field', 'propertyhive' ) . ')';
+            }
+        }
 
 		$this->add_control(
 			'field',
@@ -128,13 +135,70 @@ class Elementor_Property_Additional_Field_Widget extends \Elementor\Widget_Base 
 
 		$settings = $this->get_settings_for_display();
 
-		if ( !isset($property->id) ) {
+		if ( !isset($property->id) ) 
+		{
 			return;
 		}
 
-		if ( $property->{$settings['field']} != '' && !empty($property->{$settings['field']}) )
+		if ( !isset($settings['field']) || empty($settings['field']) )
 		{
-	        echo '<div class="elementor-widget-addition-field elementor-widget-addition-field-' . $settings['field'] . '">';
+			return;
+		}
+
+		$field_name = '';
+		$field_value = '';
+		if ( substr($settings['field'], 0, 7) == 'office-' )
+		{
+			$field_name = str_replace('office-', '', $settings['field']);
+			$office_id = (int)$property->_office_id;
+			if ( !empty($office_id) )
+			{
+				$field_value = get_post_meta( $office_id, $field_name, true );
+			}
+			$field_meta_box = 'office';
+		}
+		else
+		{
+			// Property field
+			$field_name = $settings['field'];
+			if ( $property->{$settings['field']} != '' && !empty($property->{$settings['field']}) )
+			{
+				$field_value = $property->{$settings['field']};
+			}
+		}
+
+		if ( !empty($field_value) )
+		{
+			$current_settings = get_option( 'propertyhive_template_assistant', array() );
+
+        	$custom_fields = ( (isset($current_settings['custom_fields'])) ? $current_settings['custom_fields'] : array() );
+
+        	foreach ( $custom_fields as $custom_field )
+        	{
+        		if ( $custom_field['field_name'] == $field_name )
+        		{
+        			if ( isset($custom_field['field_type']) )
+        			{
+	        			switch ( $custom_field['field_type'] )
+	        			{
+	        				case "image":
+	        				{
+                                $image = wp_get_attachment_image_src( $field_value, 'full' );
+                                if ($image !== FALSE)
+                                {
+                                    $field_value = '<img src="' . $image[0] . '" alt="">';
+                                }
+	        				}
+	        			}
+	        		}
+	        		break;
+        		}
+        	}
+		}
+
+		if ( !empty($field_value) )
+		{
+	        echo '<div class="elementor-widget-additional-field elementor-widget-additional-field-' . $settings['field'] . '">';
 	        if ( isset($settings['icon']) && !empty($settings['icon']) )
 	        {
 	        	\Elementor\Icons_Manager::render_icon( $settings['icon'], [ 'aria-hidden' => 'true' ] );
@@ -144,7 +208,7 @@ class Elementor_Property_Additional_Field_Widget extends \Elementor\Widget_Base 
 	        {
 	        	echo $settings['before'] . ' ';
 	        }
-	        echo $property->{$settings['field']};
+	        echo $field_value;
 	        if ( isset($settings['after']) && !empty($settings['after']) )
 	        {
 	        	echo ' ' . $settings['after'];
